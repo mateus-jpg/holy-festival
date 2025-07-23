@@ -25,7 +25,5 @@
     "tailwindcss": "^4"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.11",
-    "tailwindcss": "^4"
   }
 }
