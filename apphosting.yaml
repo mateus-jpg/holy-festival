@@ -48,6 +48,45 @@ env:
     availability:
       - BUILD
       - RUNTIME
+
+     
+  - variable: NEXT_PUBLIC_BASE_URL
+    value: "1:1008552661218:web:06775db3dd710a910b4ebb"
+    availability:
+      - BUILD
+      - RUNTIME 
+  
+  - variable: NEXT_PUBLIC_TAX_RATE
+    value: "0.00"
+    availability:
+      - BUILD
+      - RUNTIME 
+    
+  - variable: NEXT_PUBLIC_TRANSACTION_FEE
+    value: "0.25"
+    availability:
+      - BUILD
+      - RUNTIME 
+  
+  - variable: NEXT_PUBLIC_TRANSACTION_RATE
+    value: "0.015"
+    availability:
+      - BUILD
+      - RUNTIME 
+
+  - variable: NEXT_PUBLIC_CURRENCY
+    value: "eur"
+    availability:
+      - BUILD
+      - RUNTIME 
+
+  - variable: NEXT_PUBLIC_MIN_AMOUNT
+    value: "eur"
+    availability:
+      - BUILD
+      - RUNTIME 
+
+
   #     - BUILD
   #     - RUNTIME
   #   availability:

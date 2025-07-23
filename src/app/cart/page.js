@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { AppConfig } from '@/app/lib/config';
+import { Aoboshi_One } from 'next/font/google';
+import App from 'next/app';
 
 export default function Cart() {
   const [cart, setCart] = useState([]);
@@ -46,18 +49,29 @@ export default function Cart() {
     updateCart(updatedCart);
   };
 
-  const getSubtotal = () => {
+  const getSubtotalAll = () => {
     return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
 
+ const getSubtotalWithFees = () => {
+     return cart.filter((item) => item.withFee).reduce((total, item) => total + (item.price * item.quantity), 0)
+ }
   const getTax = (subtotal) => {
-    return subtotal * 1 ; // 8% tax rate
+    return subtotal * (AppConfig.TAX_RATE); // 8% tax rate
   };
 
+  const getFees = (subtotal) => { 
+    return subtotal > 0 ? (subtotal * AppConfig.TRANSACTION_RATE) + AppConfig.TRANSACTION_FEE : 0;
+  }
+
+
+
   const getTotal = () => {
-    const subtotal = getSubtotal();
-    const tax = getTax(subtotal);
-    return subtotal + tax;
+    const subtotalWithFees = getSubtotalWithFees();
+    const subtotalAll= getSubtotalAll()
+    const tax = getTax(subtotalAll);
+    const transactionFee = getFees(subtotalWithFees);
+    return subtotalAll + tax +transactionFee ;
   };
 
   const handleCheckout = () => {
@@ -86,7 +100,7 @@ export default function Cart() {
               Store
             </Link>
             <Link 
-              href="/products"
+              href="/shop"
               className="text-sm hover:underline hover:underline-offset-4"
             >
               Continue Shopping
@@ -104,7 +118,7 @@ export default function Cart() {
               Your cart is empty
             </p>
             <Link
-              href="/products"
+              href="/shop"
               className="bg-foreground text-background px-6 py-3 rounded-full hover:bg-[#383838] dark:hover:bg-[#ccc] transition-colors inline-block"
             >
               Start Shopping
@@ -186,11 +200,15 @@ export default function Cart() {
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>${getSubtotal().toFixed(2)}</span>
+                    <span>${getSubtotalAll().toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Tax</span>
-                    <span>${getTax(getSubtotal()).toFixed(2)}</span>
+                    <span>${getTax(getSubtotalAll()).toFixed(2)}</span>
+                  </div>
+                   <div className="flex justify-between">
+                    <span>Fees</span>
+                    <span>${getFees(getSubtotalWithFees()).toFixed(2)}</span>
                   </div>
                   <div className="border-t border-black/[.08] dark:border-white/[.145] pt-2">
                     <div className="flex justify-between font-semibold text-lg">

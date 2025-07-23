@@ -2,8 +2,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/contexts/AuthContext';
-import { validateCodiceFiscale, formatCodiceFiscale } from '@/app/utils/codiceFiscale';
+import { formatCodiceFiscale } from '@/app/utils/codiceFiscale';
+import { profileSchema } from '@/app/lib/validation'; // Import the schema
 import { User, CreditCard, LogOut } from 'lucide-react';
+
 
 export default function ProfilePage() {
   const { user, updateUserProfile, signOut } = useAuth();
@@ -50,14 +52,25 @@ export default function ProfilePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) return;
-
     setLoading(true);
+    setErrors({});
+
+    const validation = profileSchema.safeParse(formData);
+
+    if (!validation.success) {
+      const fieldErrors = {};
+      for (const issue of validation.error.issues) {
+        fieldErrors[issue.path[0]] = issue.message;
+      }
+      setErrors(fieldErrors);
+      setLoading(false);
+      return;
+    }
+
     try {
       await updateUserProfile({
-        ...formData,
-        codiceFiscale: formatCodiceFiscale(formData.codiceFiscale),
+        ...validation.data,
+        codiceFiscale: formatCodiceFiscale(validation.data.codiceFiscale),
       });
       setIsComplete(true);
     } catch (err) {

@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
-import {
-  PaymentElement,
-  useStripe,
-  useElements
-} from "@stripe/react-stripe-js";
+// src/app/components/CheckoutForm.js
+'use client';
+
+import { useState } from 'react';
+import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
 export default function CheckoutForm() {
   const stripe = useStripe();
@@ -16,10 +15,12 @@ export default function CheckoutForm() {
     e.preventDefault();
 
     if (!stripe || !elements) {
+      // Stripe.js has not yet loaded.
       return;
     }
 
     setIsLoading(true);
+    setMessage(null);
 
     const { error } = await stripe.confirmPayment({
       elements,
@@ -28,24 +29,41 @@ export default function CheckoutForm() {
       },
     });
 
+    // This point will only be reached if there is an immediate error when
+    // confirming the payment. Otherwise, the customer will be redirected.
     if (error.type === "card_error" || error.type === "validation_error") {
       setMessage(error.message);
     } else {
-      setMessage("An unexpected error occurred.");
+      setMessage("An unexpected error occurred. Please try again.");
     }
 
     setIsLoading(false);
   };
 
   return (
-    <form id="payment-form" onSubmit={handleSubmit}>
-      <PaymentElement id="payment-element" />
-      <button disabled={isLoading || !stripe || !elements} id="submit">
+    <form id="payment-form" onSubmit={handleSubmit} className="space-y-6">
+      <PaymentElement id="payment-element" options={{ layout: "tabs" }} />
+      
+      <button 
+        disabled={isLoading || !stripe || !elements} 
+        id="submit"
+        className="w-full bg-foreground text-background py-3 rounded-full font-semibold hover:bg-[#383838] dark:hover:bg-[#ccc] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+      >
         <span id="button-text">
-          {isLoading ? <div className="spinner" id="spinner"></div> : "Pay now"}
+          {isLoading ? (
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-background"></div>
+          ) : (
+            "Pay now"
+          )}
         </span>
       </button>
-      {message && <div id="payment-message">{message}</div>}
+
+      {/* Show any error or success messages */}
+      {message && (
+        <div id="payment-message" className="text-red-500 text-sm text-center">
+          {message}
+        </div>
+      )}
     </form>
   );
 }

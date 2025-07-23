@@ -12,6 +12,14 @@ export const customerSchema = z.object({
   }),
 });
 
+
+export const profileSchema = z.object({
+  name: z.string().min(2, 'Il nome è richiesto'),
+  surname: z.string().min(2, 'Il cognome è richiesto'),
+  codiceFiscale: z.string().refine(validateCodiceFiscale, {
+    message: 'Codice fiscale non valido',
+  }),
+});
 export const cartItemSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1).max(200),
