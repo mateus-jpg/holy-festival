@@ -17,9 +17,9 @@ const limiter = rateLimit({
 export async function POST(request) {
 
     try {
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);/* , {
             apiVersion: '2023-10-16',
-        });
+    } );*/
         // Rate limiting
         const ip = request.headers.get('x-forwarded-for') || request.ip || 'anonymous';
 
