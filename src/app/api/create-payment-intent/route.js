@@ -43,7 +43,7 @@ export async function POST(request) {
         const { amount, currency = AppConfig.CURRENCY, items = [] } = body;
 
         // Input validation
-        if (!amount || typeof amount !== 'number' || amount < 50) {
+        if (!amount || typeof amount !== 'number' || amount < AppConfig.MIN_AMOUNT) {
             return NextResponse.json(
                 { error: 'Invalid amount. Minimum $0.50 required.' },
                 { status: 400 }
