@@ -6,9 +6,7 @@ import rateLimit from '@/app/lib/rate-limit';
 import { getProductPrice } from '@/app/lib/products';
 import { AppConfig } from '@/app/lib/config';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: '2023-10-16',
-});
+
 
 // Rate limiter: 10 requests per minute per IP
 const limiter = rateLimit({
@@ -17,6 +15,9 @@ const limiter = rateLimit({
 });
 
 export async function POST(request) {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2023-10-16',
+});
     try {
         // Rate limiting
         const ip = request.headers.get('x-forwarded-for') || request.ip || 'anonymous';
