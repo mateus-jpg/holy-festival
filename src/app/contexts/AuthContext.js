@@ -1,12 +1,14 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { 
-  User as FirebaseUser, 
-  onAuthStateChanged, 
+import {
+  User as FirebaseUser,
+  onAuthStateChanged,
   signInWithPopup,
   signInWithEmailAndPassword,
+  sendEmailVerification,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail as firebaseSendPasswordResetEmail,
   signOut as firebaseSignOut
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -40,14 +42,15 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
+        console.log(firebaseUser)
         const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
         if (userDoc.exists()) {
-          setUser({ 
-            uid: firebaseUser.uid, 
+          setUser({
+            uid: firebaseUser.uid,
             ...userDoc.data(),
             createdAt: userDoc.data().createdAt?.toDate(),
             updatedAt: userDoc.data().updatedAt?.toDate()
-          } );
+          });
         } else {
           // Create new user document
           const newUser = {
@@ -68,33 +71,37 @@ export const AuthProvider = ({ children }) => {
     return unsubscribe;
   }, []);
 
-  const signInWithGoogle = async () => {
-    await signInWithPopup(auth, googleProvider);
-  };
 
-
-
-  const signInWithEmail = async (email, password) => {
-    await signInWithEmailAndPassword(auth, email, password);
-  };
+  const signInWithGoogle = () => signInWithPopup(auth, googleProvider);
+  const signInWithEmail = (email, password) => signInWithEmailAndPassword(auth, email, password);
+  const signOut = () => firebaseSignOut(auth);
+  const sendPasswordResetEmail = (email) => firebaseSendPasswordResetEmail(auth, email);
 
   const signUpWithEmail = async (email, password) => {
     await createUserWithEmailAndPassword(auth, email, password);
+
+    await sendEmailVerification(userCredential.user);
+    return userCredential;
   }
 
-   const signOut = async () => {
-    await firebaseSignOut(auth);
+
+
+  const resendVerificationEmail = async () => {
+    if (auth.currentUser) {
+      await sendEmailVerification(auth.currentUser);
+    } else {
+      throw new Error("No user is currently signed in.");
+    }
   };
 
   const updateUserProfile = async (profile) => {
-    console.log(profile)
     if (!user) return;
-    
+
     const updatedData = {
       ...profile,
       updatedAt: new Date(),
     };
-    
+
     await setDoc(doc(db, 'users', user.uid), updatedData, { merge: true });
     setUser({ ...user, ...updatedData });
   };
