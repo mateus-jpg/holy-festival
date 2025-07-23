@@ -1,7 +1,7 @@
 // src/app/api/save-order/route.js
 import { NextResponse } from 'next/server';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/app/lib/firebase';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
