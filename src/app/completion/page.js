@@ -1,8 +1,10 @@
+'use client'
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { Suspense } from 'react';
 
-export default function CompletionPage() {
+export  function CompletionPageInner() {
   const searchParams = useSearchParams();
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState('');
@@ -69,4 +71,12 @@ export default function CompletionPage() {
   }
 
   return null;
+}
+
+export default function CompletionWrapper(){
+    return(
+        <Suspense>
+            <CompletionPageInner></CompletionPageInner>
+        </Suspense>
+    )
 }
