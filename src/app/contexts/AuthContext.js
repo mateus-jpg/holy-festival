@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import {
   User as FirebaseUser,
   onAuthStateChanged,
@@ -9,21 +9,11 @@ import {
   sendEmailVerification,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail as firebaseSendPasswordResetEmail,
-  signOut as firebaseSignOut
+  signOut as firebaseSignOut,
+  signInWithRedirect
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, googleProvider, facebookProvider, db } from '@/app/lib/firebase';
-
-/* interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  signInWithGoogle: () => Promise<void>;
-  signInWithFacebook: () => Promise<void>;
-  signInWithEmail: (email: string, password: string) => Promise<void>;
-  signUpWithEmail: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
-  updateUserProfile: (profile: Partial<User>) => Promise<void>;
-} */
+import { auth, googleProvider, db } from '@/app/lib/firebase';
 
 const AuthContext = createContext(undefined);
 
@@ -41,70 +31,140 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        console.log(firebaseUser)
-        const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-        if (userDoc.exists()) {
-          setUser({
-            uid: firebaseUser.uid,
-            ...userDoc.data(),
-            createdAt: userDoc.data().createdAt?.toDate(),
-            updatedAt: userDoc.data().updatedAt?.toDate()
-          });
+      try {
+        if (firebaseUser) {
+          console.log('Firebase user:', firebaseUser);
+          
+          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+          
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            setUser({
+              uid: firebaseUser.uid,
+              email: firebaseUser.email,
+              displayName: firebaseUser.displayName,
+              photoURL: firebaseUser.photoURL,
+              emailVerified: firebaseUser.emailVerified,
+              ...userData,
+              createdAt: userData.createdAt?.toDate(),
+              updatedAt: userData.updatedAt?.toDate()
+            });
+          } else {
+            // Create new user document
+            const newUser = {
+              email: firebaseUser.email,
+              displayName: firebaseUser.displayName || null,
+              photoURL: firebaseUser.photoURL || null,
+              emailVerified: firebaseUser.emailVerified,
+              isAdmin: false,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            };
+            
+            await setDoc(doc(db, 'users', firebaseUser.uid), newUser);
+            setUser({ 
+              uid: firebaseUser.uid, 
+              ...newUser 
+            });
+          }
         } else {
-          // Create new user document
-          const newUser = {
-            email: firebaseUser.email,
-            isAdmin: false,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          };
-          await setDoc(doc(db, 'users', firebaseUser.uid), newUser);
-          setUser({ uid: firebaseUser.uid, ...newUser });
+          setUser(null);
         }
-      } else {
+      } catch (error) {
+        console.error('Error in auth state change:', error);
         setUser(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return unsubscribe;
   }, []);
 
+  // Fixed Google Sign In with popup
+  const signInWithGoogle = useCallback(async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      return result;
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+      throw error;
+    }
+  }, []);
 
-  const signInWithGoogle = () => signInWithPopup(auth, googleProvider);
-  const signInWithEmail = (email, password) => signInWithEmailAndPassword(auth, email, password);
-  const signOut = () => firebaseSignOut(auth);
-  const sendPasswordResetEmail = (email) => firebaseSendPasswordResetEmail(auth, email);
+  const signInWithEmail = useCallback(async (email, password) => {
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      return result;
+    } catch (error) {
+      console.error('Email sign-in error:', error);
+      throw error;
+    }
+  }, []);
 
-  const signUpWithEmail = async (email, password) => {
-    await createUserWithEmailAndPassword(auth, email, password);
+  const signUpWithEmail = useCallback(async (email, password) => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Send email verification
+      if (userCredential.user) {
+        await sendEmailVerification(userCredential.user);
+      }
+      
+      return userCredential;
+    } catch (error) {
+      console.error('Email sign-up error:', error);
+      throw error;
+    }
+  }, []);
 
-    await sendEmailVerification(userCredential.user);
-    return userCredential;
-  }
+  const signOut = useCallback(async () => {
+    try {
+      await firebaseSignOut(auth);
+    } catch (error) {
+      console.error('Sign out error:', error);
+      throw error;
+    }
+  }, []);
 
+  const sendPasswordResetEmail = useCallback(async (email) => {
+    try {
+      await firebaseSendPasswordResetEmail(auth, email);
+    } catch (error) {
+      console.error('Password reset error:', error);
+      throw error;
+    }
+  }, []);
 
-
-  const resendVerificationEmail = async () => {
+  const resendVerificationEmail = useCallback(async () => {
     if (auth.currentUser) {
-      await sendEmailVerification(auth.currentUser);
+      try {
+        await sendEmailVerification(auth.currentUser);
+      } catch (error) {
+        console.error('Resend verification error:', error);
+        throw error;
+      }
     } else {
       throw new Error("No user is currently signed in.");
     }
-  };
+  }, []);
 
-  const updateUserProfile = async (profile) => {
+  const updateUserProfile = useCallback(async (profile) => {
     if (!user) return;
 
-    const updatedData = {
-      ...profile,
-      updatedAt: new Date(),
-    };
+    try {
+      const updatedData = {
+        ...profile,
+        updatedAt: new Date(),
+      };
 
-    await setDoc(doc(db, 'users', user.uid), updatedData, { merge: true });
-    setUser({ ...user, ...updatedData });
-  };
+      await setDoc(doc(db, 'users', user.uid), updatedData, { merge: true });
+      setUser(prevUser => ({ ...prevUser, ...updatedData }));
+    } catch (error) {
+      console.error('Update profile error:', error);
+      throw error;
+    }
+  }, [user]);
 
   const value = {
     user,
@@ -113,6 +173,8 @@ export const AuthProvider = ({ children }) => {
     signInWithEmail,
     signUpWithEmail,
     signOut,
+    sendPasswordResetEmail,
+    resendVerificationEmail,
     updateUserProfile,
   };
 
