@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
-import { doc, updateDoc } from 'firebase/firestore';
+// Add these imports to use Firestore
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'; 
 import { db } from '@/app/lib/firebase';
 
 
@@ -56,15 +57,39 @@ export async function POST(request) {
 
 async function handlePaymentSucceeded(paymentIntent) {
   try {
-    // Update order status in Firestore
-    // Implementation depends on how you store the order-paymentIntent mapping
     console.log('Payment succeeded:', paymentIntent.id);
+
+    // 1. Extract metadata and details from the paymentIntent
+    const { metadata } = paymentIntent;
+    const items = JSON.parse(metadata.orderItems || '[]');
+    const total = paymentIntent.amount / 100; // Convert from cents to dollars
+
+    console.log(paymentIntent)
+    // Note: You may want to add customerId to metadata when creating the payment intent
+    // to link the order to a specific user.
+    const customerId = metadata.userId || 'guest'; 
+    const customerDetails = paymentIntent.shipping || { name: 'Guest', address: {} };
+
+    // 2. Create the order object to be saved
+    const order = {
+      paymentIntentId: paymentIntent.id,
+      customerId: customerId,
+      customerName: customerDetails.name,
+      customerEmail: paymentIntent.receipt_email,
+      items: items,
+      total: total,
+      currency: paymentIntent.currency,
+      status: 'completed',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    };
+
+    // 3. Save the order to Firestore
+    const docRef = await addDoc(collection(db, 'orders'), order);
+    console.log('Order saved to Firestore with ID:', docRef.id);
     
-    // TODO: Update inventory
-    // TODO: Send confirmation email
-    // TODO: Trigger fulfillment
   } catch (error) {
-    console.error('Error handling payment success:', error);
+    console.error('Error handling payment success and saving order:', error);
   }
 }
 
@@ -72,8 +97,10 @@ async function handlePaymentFailed(paymentIntent) {
   try {
     console.log('Payment failed:', paymentIntent.id);
     
-    // TODO: Update order status
-    // TODO: Send failure notification
+    // Optional: You could create an order with a "failed" status here
+    // Or send a notification to the user.
+    // For now, we'll just log it.
+    
   } catch (error) {
     console.error('Error handling payment failure:', error);
   }

@@ -6,9 +6,11 @@ import { Elements } from '@stripe/react-stripe-js';
 import { stripePromise } from '@/app/lib/stripe';
 import CheckoutForm from '@/app/components/CheckoutForm';
 import { AppConfig } from '@/app/lib/config'; // Assuming you have a config file
+import { useAuth } from '@/app/contexts/AuthContext';
 
 // A separate function to handle the API call
-async function createPaymentIntent(cart) {
+async function createPaymentIntent(cart, user) {
+
   const getSubtotalAll = () => {
     return cart.reduce((total, item) => total + item.price * item.quantity, 0);
   };
@@ -49,12 +51,13 @@ async function createPaymentIntent(cart) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+      userId: user.uid,
       amount: total,
       items: cart,
       currency: AppConfig.CURRENCY,
     }),
   });
-
+  console.log(response)
   if (!response.ok) {
     const { error } = await response.json();
     throw new Error(error || 'Failed to create payment intent');
@@ -64,6 +67,7 @@ async function createPaymentIntent(cart) {
 }
 
 export default function CheckoutPage() {
+  const { user } = useAuth();
   const [clientSecret, setClientSecret] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -80,7 +84,7 @@ export default function CheckoutPage() {
         }
         setCart(savedCart);
 
-        const data = await createPaymentIntent(savedCart);
+        const data = await createPaymentIntent(savedCart, user);
         setClientSecret(data.client_secret);
       } catch (err) {
         setError(err.message);
@@ -88,8 +92,10 @@ export default function CheckoutPage() {
         setLoading(false);
       }
     };
-    initializeCheckout();
-  }, []);
+    if (user) {
+      initializeCheckout();
+    }
+  }, [user]);
 
   if (loading) {
     return (

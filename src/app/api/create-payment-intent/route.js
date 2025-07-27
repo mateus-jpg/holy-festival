@@ -45,7 +45,7 @@ export async function POST(request) {
         }
 
         const body = await request.json();
-        const { amount, currency = AppConfig.CURRENCY, items = [] } = body;
+        const { amount, currency = AppConfig.CURRENCY, items = [], userId} = body;
 
         // Input validation
         if (!amount || typeof amount !== 'number' || amount < AppConfig.MIN_AMOUNT) {
@@ -57,7 +57,7 @@ export async function POST(request) {
         }
 
         if (amount > 100000000) { // $1M limit
-            console.erro('Amount exceeds maximumm limit')
+            console.error('Amount exceeds maximumm limit')
             return NextResponse.json(
                 { error: 'Amount exceeds maximum limit' },
                 { status: 400 }
@@ -146,6 +146,7 @@ export async function POST(request) {
             amount: finalTotal,
             currency: currency.toLowerCase(),
             metadata: {
+                userId: userId,
                 orderItems: JSON.stringify(validatedItems),
                 itemCount: validatedItems.reduce((sum, item) => sum + item.quantity, 0),
             },
@@ -156,6 +157,7 @@ export async function POST(request) {
 
         return NextResponse.json({
             client_secret: paymentIntent.client_secret,
+            payload: paymentIntent,
             amount: finalTotal,
         });
 

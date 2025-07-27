@@ -13,7 +13,6 @@ env:
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
     secret: holyFestivalApiKey
 
-
   - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
     value: "holy-festival-2025.firebaseapp.com"
     availability:
@@ -41,7 +40,6 @@ env:
   - variable: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
     value: pk_test_51Rmf0HPcdLeFoVRUzeKrWASSFV2QxDdvTnGzrpTDE6TOGdiR9bvJRUkQwFVGABWn0b6cTLS2fUehcJQlVYrcETk5003OoxglMU
 
-    
   - variable: NODE_ENV
     value: "production"
     availability:
@@ -92,6 +90,10 @@ env:
 
   - variable: STRIPE_SECRET_KEY
     secret: stripeApiKey
+
+    
+  - variable: STRIPE_WEBHOOK_KEY
+    secret: stripeWebhookKey
   #     - BUILD
   #     - RUNTIME
   #   availability:
