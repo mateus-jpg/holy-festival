@@ -13,9 +13,6 @@ env:
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
     secret: holyFestivalApiKey
 
-  - variable: STRIPE_SECRET_KEY
-    secret: firestore-stripe-payments-STRIPE_API_KEY
-
 
   - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
     value: "holy-festival-2025.firebaseapp.com"
@@ -53,44 +50,44 @@ env:
       - BUILD
       - RUNTIME
 
-     
   - variable: NEXT_PUBLIC_BASE_URL
     value: "https://holy-festival.onebridgeto.com/"
     availability:
       - BUILD
-      - RUNTIME 
-  
+      - RUNTIME
+
   - variable: NEXT_PUBLIC_TAX_RATE
     value: "0.00"
     availability:
       - BUILD
-      - RUNTIME 
-    
+      - RUNTIME
+
   - variable: NEXT_PUBLIC_TRANSACTION_FEE
     value: "0.25"
     availability:
       - BUILD
-      - RUNTIME 
-  
+      - RUNTIME
+
   - variable: NEXT_PUBLIC_TRANSACTION_RATE
     value: "0.015"
     availability:
       - BUILD
-      - RUNTIME 
+      - RUNTIME
 
   - variable: NEXT_PUBLIC_CURRENCY
     value: "eur"
     availability:
       - BUILD
-      - RUNTIME 
+      - RUNTIME
 
   - variable: NEXT_PUBLIC_MIN_AMOUNT
     value: "0.50"
     availability:
       - BUILD
-      - RUNTIME 
-
-
+      - RUNTIME
+      
+  - variable: STRIPE_SECRET_KEY
+    secret: stripeApiKey
   #     - BUILD
   #     - RUNTIME
   #   availability:
