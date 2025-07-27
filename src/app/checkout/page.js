@@ -15,7 +15,7 @@ async function createPaymentIntent(cart) {
 
   const getSubtotalWithFees = () => {
     return cart
-      .filter((item) => item.withFee)
+      .filter((item) => "withFees" in item && item.withFee)
       .reduce((total, item) => total + item.price * item.quantity, 0);
   };
 

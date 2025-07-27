@@ -38,6 +38,10 @@ env:
       - BUILD
       - RUNTIME
 
+  - variable: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+    value: pk_test_51Rmf0HPcdLeFoVRUzeKrWASSFV2QxDdvTnGzrpTDE6TOGdiR9bvJRUkQwFVGABWn0b6cTLS2fUehcJQlVYrcETk5003OoxglMU
+
+    
   - variable: NODE_ENV
     value: "production"
     availability:
@@ -85,7 +89,7 @@ env:
     availability:
       - BUILD
       - RUNTIME
-      
+
   - variable: STRIPE_SECRET_KEY
     secret: stripeApiKey
   #     - BUILD
