@@ -9,8 +9,41 @@ import { AppConfig } from '@/app/lib/config'; // Assuming you have a config file
 
 // A separate function to handle the API call
 async function createPaymentIntent(cart) {
-  const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const total = Math.round((subtotal + (subtotal * AppConfig.TAX_RATE)) * 100);
+  const getSubtotalAll = () => {
+    return cart.reduce((total, item) => total + item.price * item.quantity, 0);
+  };
+
+  const getSubtotalWithFees = () => {
+    return cart
+      .filter((item) => item.withFee)
+      .reduce((total, item) => total + item.price * item.quantity, 0);
+  };
+
+  const getTax = (subtotal) => {
+    return subtotal * AppConfig.TAX_RATE;
+  };
+
+  const getFees = (feeBase) => {
+    return feeBase > 0
+      ? (feeBase * AppConfig.TRANSACTION_RATE) + AppConfig.TRANSACTION_FEE
+      : 0;
+  };
+
+  const subtotalAll = getSubtotalAll();
+  const subtotalWithFees = getSubtotalWithFees();
+
+  const tax = getTax(subtotalAll);
+
+  // Proportional tax share for items with fees
+  const taxOnWithFees = subtotalAll > 0
+    ? (subtotalWithFees / subtotalAll) * tax
+    : 0;
+
+  const feeBase = subtotalWithFees + taxOnWithFees;
+  const fees = getFees(feeBase);
+
+  // Final total (in cents)
+  const total = Math.round((subtotalAll + tax + fees) * 100);
 
   const response = await fetch('/api/create-payment-intent', {
     method: 'POST',
@@ -46,7 +79,7 @@ export default function CheckoutPage() {
           return;
         }
         setCart(savedCart);
-        
+
         const data = await createPaymentIntent(savedCart);
         setClientSecret(data.client_secret);
       } catch (err) {

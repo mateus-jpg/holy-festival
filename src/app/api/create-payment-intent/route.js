@@ -7,7 +7,7 @@ import { getProductPrice } from '@/app/lib/products';
 import { AppConfig } from '@/app/lib/config';
 
 
-
+const stripeKey = process.env.STRIPE_SECRET_KEY
 // Rate limiter: 10 requests per minute per IP
 const limiter = rateLimit({
     interval: 60 * 1000, // 1 minute
@@ -17,15 +17,18 @@ const limiter = rateLimit({
 export async function POST(request) {
 
     try {
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);/* , {
+        console.log('STRIPE_SECRET_KEY exists:', !!stripeKey);
+        console.log('STRIPE_SECRET_KEY length:', stripeKey.length);
+        const stripe = new Stripe(stripeKey);/* , {
             apiVersion: '2023-10-16',
-    } );*/
+        } );*/
         // Rate limiting
         const ip = request.headers.get('x-forwarded-for') || request.ip || 'anonymous';
 
         try {
             await limiter.check(request, 10, ip);
         } catch {
+            console.error('Rate limit exceeded');
             return NextResponse.json(
                 { error: 'Rate limit exceeded' },
                 { status: 429 }
@@ -46,6 +49,7 @@ export async function POST(request) {
 
         // Input validation
         if (!amount || typeof amount !== 'number' || amount < AppConfig.MIN_AMOUNT) {
+            console.error('Invalid amount. Minimum $0.50 required.')
             return NextResponse.json(
                 { error: 'Invalid amount. Minimum $0.50 required.' },
                 { status: 400 }
@@ -53,6 +57,7 @@ export async function POST(request) {
         }
 
         if (amount > 100000000) { // $1M limit
+            console.erro('Amount exceeds maximumm limit')
             return NextResponse.json(
                 { error: 'Amount exceeds maximum limit' },
                 { status: 400 }
@@ -60,6 +65,7 @@ export async function POST(request) {
         }
 
         if (!Array.isArray(items) || items.length === 0) {
+            console.error('invalid or empty cart')
             return NextResponse.json(
                 { error: 'Invalid or empty cart' },
                 { status: 400 }
@@ -75,6 +81,7 @@ export async function POST(request) {
             // In production, fetch actual prices from Firestore
             // This prevents price manipulation on client-side
             if (!item.id || !item.price || !item.quantity || item.quantity < 1) {
+                console.error('invalid cart item')
                 return NextResponse.json(
                     { error: 'Invalid cart item' },
                     { status: 400 }
@@ -85,6 +92,7 @@ export async function POST(request) {
             // TODO: block IP
             const actualPrice = await getProductPrice(item.id);
             if (actualPrice !== item.price) {
+                console.error("Price mismatch detected")
                 return NextResponse.json(
                     { error: 'Price mismatch detected' },
                     { status: 400 }
@@ -107,13 +115,26 @@ export async function POST(request) {
         }
 
         // Add tax (8%)
-        const tax = calculatedTotal * AppConfig.TAX_RATE;
-        const fees = calculatedTotalWithFees > 0 ? (calculatedTotalWithFees * AppConfig.TRANSACTION_RATE) + AppConfig.TRANSACTION_FEE : 0;
+        // Total before tax
+        const totalBeforeTax = calculatedTotal + calculatedTotalWithFees;
 
-        const finalTotal = Math.round((calculatedTotal + tax + fees) * 100);
+        // Apply tax to the full total
+        const tax = totalBeforeTax * AppConfig.TAX_RATE;
+
+        const withFeesTaxed = calculatedTotalWithFees + (calculatedTotalWithFees * AppConfig.TAX_RATE);
+
+
+        // Fees are applied only to the "withFees" items + their tax share
+        const fees = calculatedTotalWithFees > 0
+            ? (withFeesTaxed * AppConfig.TRANSACTION_RATE) + AppConfig.TRANSACTION_FEE
+            : 0;
+
+        // Final amount (in cents)
+        const finalTotal = Math.round((totalBeforeTax + tax + fees) * 100);
 
         // Verify calculated total matches requested amount
         if (Math.abs(finalTotal - amount) > 1) { // Allow 1 cent difference for rounding
+            console.error("amount verification failde")
             return NextResponse.json(
                 { error: 'Amount verification failed' },
                 { status: 400 }
@@ -142,6 +163,7 @@ export async function POST(request) {
         console.error('Payment intent creation failed:', error);
 
         if (error.type === 'StripeCardError') {
+            console.error("Strip Card Error")
             return NextResponse.json(
                 { error: error.message },
                 { status: 400 }

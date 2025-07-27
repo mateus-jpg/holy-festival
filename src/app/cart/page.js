@@ -35,7 +35,7 @@ export default function Cart() {
       removeFromCart(productId);
       return;
     }
-    
+
     const updatedCart = cart.map(item =>
       item.id === productId
         ? { ...item, quantity: newQuantity }
@@ -48,32 +48,44 @@ export default function Cart() {
     const updatedCart = cart.filter(item => item.id !== productId);
     updateCart(updatedCart);
   };
-
   const getSubtotalAll = () => {
     return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
 
- const getSubtotalWithFees = () => {
-     return cart.filter((item) => item.withFee).reduce((total, item) => total + (item.price * item.quantity), 0)
- }
-  const getTax = (subtotal) => {
-    return subtotal * (AppConfig.TAX_RATE); // 8% tax rate
+  // Total of only "withFee" items
+  const getSubtotalWithFees = () => {
+    return cart
+      .filter(item => "withFee" in item && item.withFee)
+      .reduce((total, item) => total + (item.price * item.quantity), 0);
   };
 
-  const getFees = (subtotal) => { 
-    return subtotal > 0 ? (subtotal * AppConfig.TRANSACTION_RATE) + AppConfig.TRANSACTION_FEE : 0;
-  }
+  // Tax is always applied to all items
+  const getTax = () => {
+    return getSubtotalAll() * AppConfig.TAX_RATE;
+  };
 
+  // Fees are applied only on "withFee" items + their share of tax
+  const getFees = () => {
+    const withFeesSubtotal = getSubtotalWithFees();
+    const allSubtotal = getSubtotalAll();
 
+    if (withFeesSubtotal === 0 || allSubtotal === 0) return 0;
 
+    // Proportional tax on withFee items
+    const taxShare = (withFeesSubtotal / allSubtotal) * getTax();
+    const feeBase = withFeesSubtotal + taxShare;
+
+    return (feeBase * AppConfig.TRANSACTION_RATE) + AppConfig.TRANSACTION_FEE;
+  };
+
+  // Final total
   const getTotal = () => {
-    const subtotalWithFees = getSubtotalWithFees();
-    const subtotalAll= getSubtotalAll()
-    const tax = getTax(subtotalAll);
-    const transactionFee = getFees(subtotalWithFees);
-    return subtotalAll + tax +transactionFee ;
-  };
+    const subtotal = getSubtotalAll();
+    const tax = getTax();
+    const fees = getFees();
 
+    return subtotal + tax + fees;
+  };
   const handleCheckout = () => {
     if (cart.length === 0) {
       alert('Your cart is empty!');
@@ -99,7 +111,7 @@ export default function Cart() {
             <Link href="/" className="text-xl font-semibold">
               Store
             </Link>
-            <Link 
+            <Link
               href="/shop"
               className="text-sm hover:underline hover:underline-offset-4"
             >
@@ -196,7 +208,7 @@ export default function Cart() {
             <div className="lg:col-span-1">
               <div className="border border-black/[.08] dark:border-white/[.145] rounded-lg p-6 sticky top-4">
                 <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
-                
+
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
@@ -204,11 +216,11 @@ export default function Cart() {
                   </div>
                   <div className="flex justify-between">
                     <span>Tax</span>
-                    <span>${getTax(getSubtotalAll()).toFixed(2)}</span>
+                   <span>${getTax().toFixed(2)}</span>
                   </div>
-                   <div className="flex justify-between">
+                  <div className="flex justify-between">
                     <span>Fees</span>
-                    <span>${getFees(getSubtotalWithFees()).toFixed(2)}</span>
+                    <span>${getFees().toFixed(2)}</span>
                   </div>
                   <div className="border-t border-black/[.08] dark:border-white/[.145] pt-2">
                     <div className="flex justify-between font-semibold text-lg">
