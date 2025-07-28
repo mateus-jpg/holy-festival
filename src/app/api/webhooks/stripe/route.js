@@ -14,7 +14,7 @@ export async function POST(request) {
     const body = await request.text();
     const headersList = headers();
     const signature = headersList.get('stripe-signature');
-
+    console.log("Recevide call on stripe Endpoint")
     if (!signature || !webhookSecret) {
       return NextResponse.json(
         { error: 'Missing signature or webhook secret' },

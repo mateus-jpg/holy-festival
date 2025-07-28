@@ -238,7 +238,7 @@ export default function Cart() {
                 </button>
 
                 <Link
-                  href="/products"
+                  href="/shop"
                   className="block text-center text-sm hover:underline hover:underline-offset-4 mt-4"
                 >
                   Continue Shopping
