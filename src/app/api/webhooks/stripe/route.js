@@ -1,45 +1,51 @@
+// src/app/api/webhooks/stripe/route.js
+import Stripe from 'stripe';
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
-import Stripe from 'stripe';
-// Add these imports to use Firestore
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore'; 
-import { db } from '@/app/lib/firebase';
+import admin from 'firebase-admin';
 
+// Initialize Firebase Admin SDK
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.applicationDefault(),
+  });
+}
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+const db = admin.firestore();
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function POST(request) {
+  const body = await request.text();
+  const signature = headers().get('stripe-signature');
+
+  let event;
+
   try {
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-    const body = await request.text();
-    const headersList = headers();
-    const signature = headersList.get('stripe-signature');
-    console.log("Recevide call on stripe Endpoint")
-    if (!signature || !webhookSecret) {
-      return NextResponse.json(
-        { error: 'Missing signature or webhook secret' },
-        { status: 400 }
-      );
-    }
+    // Verify webhook signature
+    event = stripe.webhooks.constructEvent(
+      body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    console.error('Webhook signature verification failed:', err.message);
+    return NextResponse.json(
+      { error: `Webhook Error: ${err.message}` },
+      { status: 400 }
+    );
+  }
 
-    let event;
-    try {
-      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-    } catch (err) {
-      console.error('Webhook signature verification failed:', err);
-      return NextResponse.json(
-        { error: 'Invalid signature' },
-        { status: 400 }
-      );
-    }
-
-    // Handle different event types
+  // Handle the event
+  try {
     switch (event.type) {
       case 'payment_intent.succeeded':
-        await handlePaymentSucceeded(event.data.object);
+        await handlePaymentIntentSucceeded(event.data.object);
         break;
       case 'payment_intent.payment_failed':
-        await handlePaymentFailed(event.data.object);
+        await handlePaymentIntentFailed(event.data.object);
+        break;
+      case 'payment_intent.requires_action':
+        await handlePaymentIntentRequiresAction(event.data.object);
         break;
       default:
         console.log(`Unhandled event type: ${event.type}`);
@@ -47,61 +53,288 @@ export async function POST(request) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error('Webhook error:', error);
+    console.error('Error handling webhook:', error);
     return NextResponse.json(
-      { error: 'Webhook processing failed' },
+      { error: 'Webhook handler failed' },
       { status: 500 }
     );
   }
 }
 
-async function handlePaymentSucceeded(paymentIntent) {
+async function handlePaymentIntentSucceeded(paymentIntent) {
   try {
-    console.log('Payment succeeded:', paymentIntent.id);
+    console.log('Processing successful payment:', paymentIntent.id);
 
-    // 1. Extract metadata and details from the paymentIntent
-    const { metadata } = paymentIntent;
-    const items = JSON.parse(metadata.orderItems || '[]');
-    const total = paymentIntent.amount / 100; // Convert from cents to dollars
+    // Extract metadata
+    const { userId, orderItems, itemCount } = paymentIntent.metadata;
 
-    console.log(paymentIntent)
-    // Note: You may want to add customerId to metadata when creating the payment intent
-    // to link the order to a specific user.
-    const customerId = metadata.userId || 'guest'; 
-    const customerDetails = paymentIntent.shipping || { name: 'Guest', address: {} };
+    if (!userId || !orderItems) {
+      console.error('Missing required metadata in payment intent');
+      return;
+    }
 
-    // 2. Create the order object to be saved
-    const order = {
-      paymentIntentId: paymentIntent.id,
-      customerId: customerId,
-      customerName: customerDetails.name,
-      customerEmail: paymentIntent.receipt_email,
-      items: items,
-      total: total,
-      currency: paymentIntent.currency,
-      status: 'completed',
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+    // Parse order items
+    let parsedItems;
+    try {
+      parsedItems = JSON.parse(orderItems);
+    } catch (error) {
+      console.error('Failed to parse order items:', error);
+      return;
+    }
+
+    // Create order document with process status
+    const orderData = {
+      // Order identification
+      orderId: paymentIntent.id,
+      stripePaymentIntentId: paymentIntent.id,
+      userId: userId,
+
+      // Process status - can be: 'pending', 'processing', 'completed', 'failed', 'cancelled'
+      processStatus: 'completed',
+      paymentStatus: paymentIntent.status,
+
+      // Payment details
+      amount: paymentIntent.amount,
+      currency: paymentIntent.currency.toUpperCase(),
+
+      // Order items
+      items: parsedItems,
+      itemCount: parseInt(itemCount),
+
+      // Timestamps
+      createdAt: admin.firestore.Timestamp.fromMillis(paymentIntent.created * 1000),
+      updatedAt: admin.firestore.Timestamp.now(),
+      completedAt: admin.firestore.Timestamp.now(),
+
+      // Payment method info
+      paymentMethodId: paymentIntent.payment_method,
+      paymentMethodTypes: paymentIntent.payment_method_types,
+
+      // Additional Stripe data
+      stripeData: {
+        clientSecret: paymentIntent.client_secret,
+        latestCharge: paymentIntent.latest_charge,
+        receiptEmail: paymentIntent.receipt_email,
+        livemode: paymentIntent.livemode
+      }
     };
 
-    // 3. Save the order to Firestore
-    const docRef = await addDoc(collection(db, 'orders'), order);
-    console.log('Order saved to Firestore with ID:', docRef.id);
-    
+    // Store order in single orders collection
+    const orderRef = db.collection('orders').doc(paymentIntent.id);
+    await orderRef.set(orderData);
+
+    console.log(`Order ${paymentIntent.id} successfully stored with status 'completed' for user ${userId}`);
+
+    // Optional: Update product inventory
+    await updateProductInventory(parsedItems);
+
   } catch (error) {
-    console.error('Error handling payment success and saving order:', error);
+    console.error('Error handling successful payment:', error);
+    // Store order with failed process status
+    await storeFailedOrder(paymentIntent, 'processing_error', error.message);
   }
 }
 
-async function handlePaymentFailed(paymentIntent) {
+async function handlePaymentIntentFailed(paymentIntent) {
   try {
-    console.log('Payment failed:', paymentIntent.id);
-    
-    // Optional: You could create an order with a "failed" status here
-    // Or send a notification to the user.
-    // For now, we'll just log it.
-    
+    console.log('Processing failed payment:', paymentIntent.id);
+
+    const { userId, orderItems, itemCount } = paymentIntent.metadata;
+
+    if (!userId) {
+      console.error('Missing userId in failed payment metadata');
+      return;
+    }
+
+    let parsedItems = [];
+    try {
+      parsedItems = JSON.parse(orderItems || '[]');
+    } catch (error) {
+      console.error('Failed to parse order items in failed payment:', error);
+    }
+
+    // Store failed order in same collection with process status
+    const failedOrderData = {
+      orderId: paymentIntent.id,
+      stripePaymentIntentId: paymentIntent.id,
+      userId: userId,
+
+      // Process status for failed payments
+      processStatus: 'failed',
+      paymentStatus: paymentIntent.status,
+
+      amount: paymentIntent.amount,
+      currency: paymentIntent.currency.toUpperCase(),
+      items: parsedItems,
+      itemCount: parseInt(itemCount || '0'),
+
+      failureReason: paymentIntent.last_payment_error?.message || 'Unknown payment error',
+
+      createdAt: admin.firestore.Timestamp.fromMillis(paymentIntent.created * 1000),
+      updatedAt: admin.firestore.Timestamp.now(),
+      failedAt: admin.firestore.Timestamp.now(),
+
+      stripeData: {
+        lastPaymentError: paymentIntent.last_payment_error,
+        livemode: paymentIntent.livemode
+      }
+    };
+
+    // Store in same orders collection
+    const orderRef = db.collection('orders').doc(paymentIntent.id);
+    await orderRef.set(failedOrderData);
+
+    console.log(`Failed payment ${paymentIntent.id} stored with status 'failed' for user ${userId}`);
+
   } catch (error) {
-    console.error('Error handling payment failure:', error);
+    console.error('Error handling failed payment:', error);
+  }
+}
+
+async function handlePaymentIntentRequiresAction(paymentIntent) {
+  try {
+    console.log('Processing payment that requires action:', paymentIntent.id);
+
+    const { userId, orderItems, itemCount } = paymentIntent.metadata;
+
+    if (!userId) {
+      console.error('Missing userId in payment requires action metadata');
+      return;
+    }
+
+    let parsedItems = [];
+    try {
+      parsedItems = JSON.parse(orderItems || '[]');
+    } catch (error) {
+      console.error('Failed to parse order items in requires action payment:', error);
+    }
+
+    // Get action type from next_action
+    const actionType = paymentIntent.next_action?.type || 'unknown';
+    const actionData = paymentIntent.next_action || {};
+
+    // Create/update order with pending status
+    const pendingOrderData = {
+      orderId: paymentIntent.id,
+      stripePaymentIntentId: paymentIntent.id,
+      userId: userId,
+
+      // Process status for payments requiring action
+      processStatus: 'pending',
+      paymentStatus: paymentIntent.status, // 'requires_action'
+
+      amount: paymentIntent.amount,
+      currency: paymentIntent.currency.toUpperCase(),
+      items: parsedItems,
+      itemCount: parseInt(itemCount || '0'),
+
+      // Action details
+      requiresAction: true,
+      actionType: actionType, // 'use_stripe_sdk', 'redirect_to_url', etc.
+      actionData: actionData,
+
+      createdAt: admin.firestore.Timestamp.fromMillis(paymentIntent.created * 1000),
+      updatedAt: admin.firestore.Timestamp.now(),
+      pendingAt: admin.firestore.Timestamp.now(),
+
+      // Payment method info
+      paymentMethodId: paymentIntent.payment_method,
+      paymentMethodTypes: paymentIntent.payment_method_types,
+
+      stripeData: {
+        clientSecret: paymentIntent.client_secret,
+        nextAction: paymentIntent.next_action,
+        livemode: paymentIntent.livemode
+      }
+    };
+
+    // Store/update order in orders collection
+    const orderRef = db.collection('orders').doc(paymentIntent.id);
+
+    // Check if order already exists to preserve creation timestamp
+    const existingOrder = await orderRef.get();
+    if (existingOrder.exists) {
+      // Update existing order, preserve createdAt
+      await orderRef.update({
+        processStatus: 'pending',
+        paymentStatus: paymentIntent.status,
+        requiresAction: true,
+        actionType: actionType,
+        actionData: actionData,
+        updatedAt: admin.firestore.Timestamp.now(),
+        pendingAt: admin.firestore.Timestamp.now(),
+        stripeData: pendingOrderData.stripeData
+      });
+      console.log(`Updated existing order ${paymentIntent.id} with 'pending' status - requires ${actionType}`);
+    } else {
+      // Create new order
+      await orderRef.set(pendingOrderData);
+      console.log(`Created new order ${paymentIntent.id} with 'pending' status - requires ${actionType}`);
+    }
+
+  } catch (error) {
+    console.error('Error handling payment requires action:', error);
+    // Store order with error status
+    await storeFailedOrder(paymentIntent, 'processing_error', `Requires action processing error: ${error.message}`);
+  }
+}
+
+async function storeFailedOrder(paymentIntent, processStatus, errorMessage) {
+  try {
+    const { userId, orderItems, itemCount } = paymentIntent.metadata;
+
+    let parsedItems = [];
+    try {
+      parsedItems = JSON.parse(orderItems || '[]');
+    } catch (error) {
+      console.error('Failed to parse order items:', error);
+    }
+
+    const errorOrderData = {
+      orderId: paymentIntent.id,
+      stripePaymentIntentId: paymentIntent.id,
+      userId: userId || 'unknown',
+
+      processStatus: processStatus, // 'processing_error', 'failed', etc.
+      paymentStatus: paymentIntent.status,
+
+      amount: paymentIntent.amount,
+      currency: paymentIntent.currency.toUpperCase(),
+      items: parsedItems,
+      itemCount: parseInt(itemCount || '0'),
+
+      errorMessage: errorMessage,
+
+      createdAt: admin.firestore.Timestamp.fromMillis(paymentIntent.created * 1000),
+      updatedAt: admin.firestore.Timestamp.now(),
+      errorAt: admin.firestore.Timestamp.now(),
+    };
+
+    await db.collection('orders').doc(paymentIntent.id).set(errorOrderData);
+    console.log(`Error order ${paymentIntent.id} stored with status '${processStatus}'`);
+
+  } catch (error) {
+    console.error('Failed to store error order:', error);
+  }
+}
+
+async function updateProductInventory(items) {
+  try {
+    const batch = db.batch();
+
+    for (const item of items) {
+      const productRef = db.collection('products').doc(item.id);
+      batch.update(productRef, {
+        soldCount: admin.firestore.FieldValue.increment(item.quantity),
+        lastSoldAt: admin.firestore.Timestamp.now()
+      });
+    }
+
+    await batch.commit();
+    console.log('Product inventory updated successfully');
+
+  } catch (error) {
+    console.error('Error updating product inventory:', error);
+    // Don't throw - inventory update failure shouldn't fail the webhook
   }
 }

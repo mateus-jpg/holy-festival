@@ -2,68 +2,105 @@
 'use client';
 
 import { useState } from 'react';
-import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import {
+    useStripe,
+    useElements,
+    PaymentElement,
+} from '@stripe/react-stripe-js';
 
-export default function CheckoutForm() {
-  const stripe = useStripe();
-  const elements = useElements();
+export default function CheckoutForm({
+    onPaymentSuccess,
+    onPaymentError,
+    paymentIntentId
+}) {
+    const stripe = useStripe();
+    const elements = useElements();
+    const [isLoading, setIsLoading] = useState(false);
+    const [message, setMessage] = useState('');
 
-  const [message, setMessage] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+    const handleSubmit = async (event) => {
+        event.preventDefault();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+        if (!stripe || !elements) {
+            return;
+        }
 
-    if (!stripe || !elements) {
-      // Stripe.js has not yet loaded.
-      return;
-    }
+        setIsLoading(true);
+        setMessage('');
 
-    setIsLoading(true);
-    setMessage(null);
+        try {
+            const { error, paymentIntent } = await stripe.confirmPayment({
+                elements,
+                confirmParams: {
+                    // This is where users will be redirected after payment
+                    return_url: `${window.location.origin}/completion`,
+                },
+                redirect: 'if_required',
+            });
 
-    const { error } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: `${window.location.origin}/completion`,
-      },
-    });
+            if (error) {
+                // Payment failed
+                console.error('Payment error:', error);
+                setMessage(error.message || 'An unexpected error occurred.');
+                onPaymentError?.(error);
+            } else if (paymentIntent) {
+                // Payment succeeded
+                console.log('Payment succeeded:', paymentIntent);
+                onPaymentSuccess?.(paymentIntent);
 
-    // This point will only be reached if there is an immediate error when
-    // confirming the payment. Otherwise, the customer will be redirected.
-    if (error.type === "card_error" || error.type === "validation_error") {
-      setMessage(error.message);
-    } else {
-      setMessage("An unexpected error occurred. Please try again.");
-    }
+                // If no redirect happened (payment succeeded without additional auth),
+                // manually redirect to completion page
+                if (paymentIntent.status === 'succeeded') {
+                    window.location.href = `/completion?payment_intent_client_secret=${paymentIntent.client_secret}&redirect_status=succeeded`;
+                }
+            }
+        } catch (err) {
+            console.error('Unexpected error:', err);
+            setMessage('An unexpected error occurred.');
+            onPaymentError?.(err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-    setIsLoading(false);
-  };
+    return (
+        <form onSubmit={handleSubmit} className="space-y-6">
+            <PaymentElement
+                options={{
+                    layout: 'tabs',
+                }}
+            />
 
-  return (
-    <form id="payment-form" onSubmit={handleSubmit} className="space-y-6">
-      <PaymentElement id="payment-element" options={{ layout: "tabs" }} />
-      
-      <button 
-        disabled={isLoading || !stripe || !elements} 
-        id="submit"
-        className="w-full bg-foreground text-background py-3 rounded-full font-semibold hover:bg-[#383838] dark:hover:bg-[#ccc] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-      >
-        <span id="button-text">
-          {isLoading ? (
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-background"></div>
-          ) : (
-            "Pay now"
-          )}
-        </span>
-      </button>
+            {message && (
+                <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+                    {message}
+                </div>
+            )}
 
-      {/* Show any error or success messages */}
-      {message && (
-        <div id="payment-message" className="text-red-500 text-sm text-center">
-          {message}
-        </div>
-      )}
-    </form>
-  );
+            <button
+                type="submit"
+                disabled={isLoading || !stripe || !elements}
+                className={`
+          w-full py-3 px-4 rounded-lg font-medium transition-all duration-200
+          ${isLoading || !stripe || !elements
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl'
+                    }
+        `}
+            >
+                {isLoading ? (
+                    <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Processing...
+                    </div>
+                ) : (
+                    'Pay Now'
+                )}
+            </button>
+
+            <div className="text-xs text-gray-500 text-center">
+                Your payment is secured by Stripe
+            </div>
+        </form>
+    );
 }
