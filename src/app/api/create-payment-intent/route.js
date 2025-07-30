@@ -18,8 +18,7 @@ const limiter = rateLimit({
 export async function POST(request) {
 
     try {
-        console.log('STRIPE_SECRET_KEY exists:', !!stripeKey);
-        console.log('STRIPE_SECRET_KEY length:', stripeKey.length);
+
         const stripe = new Stripe(stripeKey);/* , {
             apiVersion: '2023-10-16',
         } );*/
