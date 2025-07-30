@@ -5,6 +5,7 @@ import { headers } from 'next/headers';
 import rateLimit from '@/app/lib/rate-limit';
 import { getProductPrice } from '@/app/lib/products';
 import { AppConfig } from '@/app/lib/config';
+import Products from '@/app/shop/page';
 
 
 const stripeKey = process.env.STRIPE_SECRET_KEY
@@ -24,7 +25,7 @@ export async function POST(request) {
         } );*/
         // Rate limiting
         const ip = request.headers.get('x-forwarded-for') || request.ip || 'anonymous';
-        
+
         try {
             await limiter.check(request, 10, ip);
         } catch {
@@ -45,7 +46,7 @@ export async function POST(request) {
         }
 
         const body = await request.json();
-        const { amount, currency = AppConfig.CURRENCY, items = [], userId} = body;
+        const { amount, currency = AppConfig.CURRENCY, items = [], userId } = body;
 
         // Input validation
         if (!amount || typeof amount !== 'number' || amount < AppConfig.MIN_AMOUNT) {
@@ -107,7 +108,10 @@ export async function POST(request) {
                 calculatedTotal += item.price * item.quantity;
             }
             validatedItems.push({
-               item
+                itemId: item.id,
+                category: item.category,
+                price: item.price,
+                quantity: item.quantity
             });
         }
 
