@@ -24,7 +24,7 @@ export async function POST(request) {
         } );*/
         // Rate limiting
         const ip = request.headers.get('x-forwarded-for') || request.ip || 'anonymous';
-
+        
         try {
             await limiter.check(request, 10, ip);
         } catch {
@@ -107,10 +107,7 @@ export async function POST(request) {
                 calculatedTotal += item.price * item.quantity;
             }
             validatedItems.push({
-                id: item.id,
-                name: item.name,
-                price: item.price,
-                quantity: item.quantity
+               item
             });
         }
 
