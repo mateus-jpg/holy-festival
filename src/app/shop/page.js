@@ -26,7 +26,7 @@ export default function Products() {
   const fetchProducts = async () => {
     try {
       const q = query(
-        collection(db, 'products'),
+        collection(db, 'shop'),
         orderBy('name')
       );
       const querySnapshot = await getDocs(q);
@@ -157,7 +157,7 @@ export default function Products() {
               >
                 {/* Product Image */}
                 <div className="aspect-square relative bg-gray-100 dark:bg-gray-800">
-                  {product.imageUrl ? (
+                  {product.imgUrl ? (
                     <Image
                       src={product.imageUrl}
                       alt={product.name}
@@ -185,7 +185,7 @@ export default function Products() {
                     <span className="text-xl font-bold">
                       ${product.price?.toFixed(2) || '0.00'}
                     </span>
-                    {product.stock && product.stock > 0 ? (
+                    {product.availableStock && product.availableStock > 0 ? (
                       <button
                         onClick={() => addToCart(product)}
                         className="bg-foreground text-background px-4 py-2 rounded-full text-sm font-medium hover:bg-[#383838] dark:hover:bg-[#ccc] transition-colors"

@@ -4,7 +4,7 @@ export function getProductPrice(productId){
 
 
     async function fetchProductPriceFromDB(productId) {
-        const productRef = doc(db, "products", productId);
+        const productRef = doc(db, "shop", productId);
         const productSnap = await getDoc(productRef);
 
         if (productSnap.exists()) {

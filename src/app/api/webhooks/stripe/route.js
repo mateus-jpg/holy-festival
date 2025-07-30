@@ -323,7 +323,7 @@ async function updateProductInventory(items) {
     const batch = db.batch();
 
     for (const item of items) {
-      const productRef = db.collection('products').doc(item.id);
+      const productRef = db.collection('shop').doc(item.id);
       batch.update(productRef, {
         soldCount: admin.firestore.FieldValue.increment(item.quantity),
         lastSoldAt: admin.firestore.Timestamp.now()
