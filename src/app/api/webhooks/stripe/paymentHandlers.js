@@ -321,7 +321,7 @@ async function createUserProducts(orderId, userId, orderItems) {
              } */
 
             // Handle ticket products - create one user product per quantity
-            const productsRefs = await Promise.all(product.products.map(ref => ref.get()));
+            const productsRefs = await Promise.all(productDoc.products.map(ref => ref.get()));
             console.log("Sucessufully getting all productRef from shopItems");
             for (let i = 0; i < item.quantity; i++) {
                 //if (product.type === 'single_ticket') {
