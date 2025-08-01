@@ -30,7 +30,7 @@ export async function handlePaymentIntentSucceeded(paymentIntent) {
             console.error('Failed to parse order items:', error);
             return;
         }
-        console.log("OrderData:", orderData)
+
         // Create order document with process status
         const orderData = {
             // Order identification
@@ -47,13 +47,7 @@ export async function handlePaymentIntentSucceeded(paymentIntent) {
             currency: paymentIntent.currency.toUpperCase(),
 
             // Order items
-            items: parsedItems.map(item => ({
-                id: item.id,
-                name: item.name,
-                price: item.price,
-                quantity: item.quantity,
-                withFees: item.withFees || false
-            })),
+            items: parsedItems,
             itemCount: parseInt(itemCount),
 
             // Timestamps
