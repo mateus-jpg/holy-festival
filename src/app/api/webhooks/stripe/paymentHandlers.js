@@ -30,7 +30,7 @@ export async function handlePaymentIntentSucceeded(paymentIntent) {
             console.error('Failed to parse order items:', error);
             return;
         }
-
+        console.log("OrderData:", orderData)
         // Create order document with process status
         const orderData = {
             // Order identification
@@ -73,12 +73,12 @@ export async function handlePaymentIntentSucceeded(paymentIntent) {
                 livemode: paymentIntent.livemode
             }
         };
-
+        console.log("OrderData:", orderData)
         // Store order in single orders collection
         try {
             console.log("Saving sucessfull order")
             const orderRef = db.collection('orders').doc(paymentIntent.id);
-            await orderRef.update( orderData);
+            await orderRef.update(orderData);
         }catch (error){
             console.log("Erro on saving sucessfull order:", error)
             throw error
