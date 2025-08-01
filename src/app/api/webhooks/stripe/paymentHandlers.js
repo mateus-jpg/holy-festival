@@ -69,8 +69,17 @@ export async function handlePaymentIntentSucceeded(paymentIntent) {
         };
 
         // Store order in single orders collection
-        const orderRef = db.collection('orders').doc(paymentIntent.id);
-        await orderRef.set(orderData);
+        try {
+            console.log("Saving sucessfull order")
+            const orderRef = db.collection('orders').doc(paymentIntent.id);
+            await orderRef.set(orderRef, orderData);
+        }catch (error){
+            console.log("Erro on saving sucessfull order:", error)
+            throw error
+        }
+        
+
+        
 
         console.log(`Order ${paymentIntent.id} successfully stored with status 'completed' for user ${userId}`);
         await createUserProducts(paymentIntent.id, userId, parsedItems);
