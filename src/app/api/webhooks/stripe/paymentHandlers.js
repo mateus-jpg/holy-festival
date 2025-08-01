@@ -78,7 +78,7 @@ export async function handlePaymentIntentSucceeded(paymentIntent) {
         try {
             console.log("Saving sucessfull order")
             const orderRef = db.collection('orders').doc(paymentIntent.id);
-            await orderRef.set(orderRef, orderData);
+            await orderRef.update( orderData);
         }catch (error){
             console.log("Erro on saving sucessfull order:", error)
             throw error
