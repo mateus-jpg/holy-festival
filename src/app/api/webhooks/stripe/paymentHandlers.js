@@ -47,7 +47,7 @@ export async function handlePaymentIntentSucceeded(paymentIntent) {
             currency: paymentIntent.currency.toUpperCase(),
 
             // Order items
-            items: parsedItemsmap(item => ({
+            items: parsedItems.map(item => ({
                 id: item.id,
                 name: item.name,
                 price: item.price,
