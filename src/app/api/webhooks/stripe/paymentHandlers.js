@@ -303,7 +303,7 @@ async function createUserProducts(orderId, userId, orderItems) {
 
         for (const item of orderItems) {
             // Get full product details from products collection
-            const productDoc = await db.collection('shop').doc(item.id).get();
+            const productDoc = await db.collection('shop').doc(item.itemId).get();
 
             if (!productDoc.exists) {
                 console.error(`Shop Item ${item.id} not found`);
