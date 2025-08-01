@@ -313,6 +313,7 @@ async function createUserProducts(orderId, userId, orderItems) {
 
             // Handle ticket products - create one user product per quantity
             const productsRefs = await Promise.all(product.products.map(ref => ref.get()));
+            console.log("Sucessufully getting all productRef from shopItems");
             for (let i = 0; i < item.quantity; i++) {
                 //if (product.type === 'single_ticket') {
                 await createTicketUserProduct(batch, orderId, userId, product, productsRefs, item, i + 1);
@@ -345,6 +346,7 @@ async function createTicketUserProduct(batch, orderId, userId, product, products
 
                 const ticketNumber = `TCKT-${orderSlice}${userId}${dateString}${sequence}${subsequence}`
                 const ticketRef = db.collection('tickets').doc(ticketNumber);
+                console.log("Saving ticket on ref", ticketRef)
                 const product = {
                     userId: userId,
                     userProductIdRef: userProductId,
@@ -358,6 +360,7 @@ async function createTicketUserProduct(batch, orderId, userId, product, products
                     eventId: productData.eventId,
                     category: product.category
                 }
+                
                 batch.set(ticketRef, {
                     userId: userId,
                     userProductIdRef: userProductId,
@@ -371,6 +374,7 @@ async function createTicketUserProduct(batch, orderId, userId, product, products
                     eventId: productData.eventId,
                     category: product.category
                 })
+                console.log("Saving user Product on ref", productRef)
                 batch.set(productRef, {
                     userId: userId,
                     userProductIdRef: userProductId,
@@ -386,6 +390,7 @@ async function createTicketUserProduct(batch, orderId, userId, product, products
                 })
             }
             else {
+                console.log("Saving user Product on ref", productRef)
                 batch.set(productRef, {
                     userId: userId,
                     userProductIdRef: userProductId,
