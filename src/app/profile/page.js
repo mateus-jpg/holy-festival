@@ -90,24 +90,25 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-4xl mx-auto px-4 py-6">
+    <div className="min-h-screen text-gray-800 dark:text-gray-200">
+      {/* Header with glassmorphism effect, now sticky */}
+      <header className="">
+        <div className="max-w-2xl mx-auto p-4 rounded-xl bg-white/50 dark:bg-black/50 backdrop-blur-lg shadow-lg border border-white/20 dark:border-white/10">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-800">Profilo Utente</h1>
+            <h1 className="text-xl font-bold">Profilo Utente</h1>
             <div className="flex gap-4">
               {isComplete && (
                 <button
                   onClick={() => router.push('/tickets')}
-                  className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-md"
                 >
                   <CreditCard className="w-4 h-4" />
-                  I Miei Biglietti
+                  Biglietti
                 </button>
               )}
               <button
                 onClick={handleSignOut}
-                className="flex items-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+                className="flex items-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors shadow-md"
               >
                 <LogOut className="w-4 h-4" />
                 Esci
@@ -117,105 +118,73 @@ export default function ProfilePage() {
         </div>
       </header>
 
+      {/* Main content area */}
       <main className="max-w-2xl mx-auto p-6">
-        <div className="bg-white rounded-xl shadow-lg p-8">
+        {/* Main form container with the glass effect */}
+        <div className="bg-white/30 dark:bg-black/30 backdrop-blur-lg p-8 rounded-2xl shadow-lg border border-white/20 dark:border-white/10">
           <div className="text-center mb-8">
-            <User className="w-16 h-16 mx-auto text-blue-600 mb-4" />
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            <User className="w-16 h-16 mx-auto text-blue-600 dark:text-blue-500 mb-4" />
+            <h2 className="text-2xl font-bold mb-2">
               {isComplete ? 'Profilo Completo' : 'Completa il tuo Profilo'}
             </h2>
-            <p className="text-gray-600">
+            <p className="text-gray-700 dark:text-gray-300">
               {isComplete 
-                ? 'Le tue informazioni sono state salvate correttamente'
-                : 'Per acquistare i biglietti, completa le tue informazioni'
+                ? 'Le tue informazioni sono state salvate correttamente.'
+                : 'Per acquistare i biglietti, completa le tue informazioni.'
               }
             </p>
           </div>
 
           {isComplete && (
-            <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+            <div className="mb-6 p-4 bg-green-500/20 border border-green-500/30 text-green-800 dark:text-green-300 rounded-lg">
               ✓ Profilo completato! Ora puoi acquistare i biglietti.
             </div>
           )}
 
           {errors.general && (
-            <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+            <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 text-red-800 dark:text-red-300 rounded-lg">
               {errors.general}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
-              </label>
+              <label className="block text-sm font-medium mb-2">Email</label>
               <input
                 type="email"
                 value={user.email}
                 disabled
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                className="w-full px-4 py-3 border border-gray-400/50 rounded-lg bg-gray-500/10 text-gray-500 dark:text-gray-400"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nome *
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.name ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="Inserisci il tuo nome"
-              />
-              {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Cognome *
-              </label>
-              <input
-                type="text"
-                value={formData.surname}
-                onChange={(e) => setFormData({ ...formData, surname: e.target.value })}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.surname ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="Inserisci il tuo cognome"
-              />
-              {errors.surname && <p className="mt-1 text-sm text-red-600">{errors.surname}</p>}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Codice Fiscale *
-              </label>
-              <input
-                type="text"
-                value={formData.codiceFiscale}
-                onChange={(e) => setFormData({ 
-                  ...formData, 
-                  codiceFiscale: e.target.value.toUpperCase() 
-                })}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.codiceFiscale ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="RSSMRA80A01H501U"
-                maxLength={16}
-              />
-              {errors.codiceFiscale && <p className="mt-1 text-sm text-red-600">{errors.codiceFiscale}</p>}
-              <p className="mt-1 text-sm text-gray-500">
-                Il codice fiscale italiano di 16 caratteri
-              </p>
-            </div>
-
+            {['name', 'surname', 'codiceFiscale'].map((field) => (
+                <div key={field}>
+                    <label className="block text-sm font-medium mb-2 capitalize">
+                        {field === 'codiceFiscale' ? 'Codice Fiscale' : field} *
+                    </label>
+                    <input
+                        type="text"
+                        value={formData[field]}
+                        onChange={(e) => setFormData({ ...formData, [field]: field === 'codiceFiscale' ? e.target.value.toUpperCase() : e.target.value })}
+                        className={`w-full px-4 py-3 border rounded-lg bg-white/50 dark:bg-black/20 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                            errors[field] ? 'border-red-500/80' : 'border-gray-400/50'
+                        }`}
+                        placeholder={
+                            field === 'name' ? 'Inserisci il tuo nome' :
+                            field === 'surname' ? 'Inserisci il tuo cognome' :
+                            'RSSMRA80A01H501U'
+                        }
+                        maxLength={field === 'codiceFiscale' ? 16 : undefined}
+                    />
+                    {errors[field] && <p className="mt-1 text-sm text-red-500">{errors[field]}</p>}
+                </div>
+            ))}
+            
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
             >
               {loading ? 'Salvataggio...' : 'Salva Profilo'}
             </button>
@@ -225,7 +194,7 @@ export default function ProfilePage() {
             <div className="mt-8 text-center">
               <button
                 onClick={() => router.push('/shop')}
-                className="inline-flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors"
+                className="inline-flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors shadow-lg"
               >
                 <CreditCard className="w-5 h-5" />
                 Acquista Biglietti

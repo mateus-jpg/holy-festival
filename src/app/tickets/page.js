@@ -5,45 +5,43 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { collection, getDocs, query, orderBy, where } from 'firebase/firestore';
 import { db } from '@/app/lib/firebase'; // You'll need to create this
+import { useAuth } from '../contexts/AuthContext';
 
-export default function Products() {
+export default function Tickets() {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [categories, setCategories] = useState(['All']);
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState([]);
+    const { user, updateUserProfile, signOut } = useAuth();
 
   useEffect(() => {
-    fetchProducts();
-    loadCart();
-  }, []);
+    if(user){
 
-  useEffect(() => {
-    filterProducts();
-  }, [selectedCategory, products]);
+        fetchProducts();
+        loadCart();
+    }
+  }, [user]);
+
 
   const fetchProducts = async () => {
     try {
+        console.log(user)
       const q = query(
-        collection(db, 'shop'),
-        where("isActive", "==", true),
+        collection(db, 'tickets'),
+        where("userId", "==", user.uid)
       );
       const querySnapshot = await getDocs(q);
       const productsData = [];
-      const categoriesSet = new Set(['All']);
 
       querySnapshot.forEach((doc) => {
         console.log(doc)
         const product = { id: doc.id, ...doc.data() };
         productsData.push(product);
-        if (product.category) {
-          categoriesSet.add(product.category);
-        }
       });
 
       setProducts(productsData);
-      setCategories(Array.from(categoriesSet));
       setLoading(false);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -51,13 +49,7 @@ export default function Products() {
     }
   };
 
-  const filterProducts = () => {
-    if (selectedCategory === 'All') {
-      setFilteredProducts(products);
-    } else {
-      setFilteredProducts(products.filter(product => product.category === selectedCategory));
-    }
-  };
+
 
   const loadCart = () => {
     const savedCart = localStorage.getItem('cart');
@@ -118,7 +110,7 @@ export default function Products() {
               </Link>
           </div>
           <div className="flex flex-wrap gap-2">
-            {categories.map((category) => (
+            {/* {categories.map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
@@ -129,12 +121,12 @@ export default function Products() {
               >
                 {category}
               </button>
-            ))}
+            ))} */}
           </div>
         </div>
 
         {/* Products Grid */}
-        {filteredProducts.length === 0 ? (
+        {products.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-lg text-gray-600 dark:text-gray-400">
               No products found in this category.
@@ -142,7 +134,7 @@ export default function Products() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map((product) => (
+            {products.map((product) => (
               <div
                 key={product.id}
                 className="border border-black/[.08] dark:border-white/[.145] rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
@@ -193,7 +185,7 @@ export default function Products() {
                 </div>
               </div>
             ))}
-
+              
           </div>
         )}
       </div>

@@ -72,14 +72,17 @@ export async function handlePaymentIntentSucceeded(paymentIntent) {
         try {
             console.log("Saving sucessfull order")
             const orderRef = db.collection('orders').doc(paymentIntent.id);
-            await orderRef.update(orderData);
-        }catch (error){
+
+            await orderRef.set(orderData);
+           
+            
+        } catch (error) {
             console.log("Erro on saving sucessfull order:", error)
             throw error
         }
-        
 
-        
+
+
 
         console.log(`Order ${paymentIntent.id} successfully stored with status 'completed' for user ${userId}`);
         await createUserProducts(paymentIntent.id, userId, parsedItems);
@@ -281,7 +284,8 @@ async function updateProductInventory(items) {
         const batch = db.batch();
 
         for (const item of items) {
-            const productRef = db.collection('shop').doc(item.id);
+            console.log(item)
+            const productRef = db.collection('shop').doc(item.itemId);
             batch.update(productRef, {
                 soldCount: admin.firestore.FieldValue.increment(item.quantity),
                 lastSoldAt: admin.firestore.Timestamp.now()
@@ -297,6 +301,7 @@ async function updateProductInventory(items) {
     }
 }
 
+
 async function createUserProducts(orderId, userId, orderItems) {
     try {
         const batch = db.batch();
@@ -306,7 +311,7 @@ async function createUserProducts(orderId, userId, orderItems) {
             const productDoc = await db.collection('shop').doc(item.itemId).get();
 
             if (!productDoc.exists) {
-                console.error(`Shop Item ${item.id} not found`);
+                console.error(`Shop Item ${item.itemId} not found`);
                 continue;
             }
 
@@ -321,8 +326,9 @@ async function createUserProducts(orderId, userId, orderItems) {
              } */
 
             // Handle ticket products - create one user product per quantity
-            const productsRefs = await Promise.all(productDoc.products.map(ref => ref.get()));
-            console.log("Sucessufully getting all productRef from shopItems");
+            const productsRefs = await Promise.all(product.products.map(ref => ref.get()));
+            console.log("Successfully getting all productRef from shopItems");
+            
             for (let i = 0; i < item.quantity; i++) {
                 //if (product.type === 'single_ticket') {
                 await createTicketUserProduct(batch, orderId, userId, product, productsRefs, item, i + 1);
@@ -339,80 +345,75 @@ async function createUserProducts(orderId, userId, orderItems) {
         console.error('Error creating user products:', error);
         throw error;
     }
-
 }
 
 async function createTicketUserProduct(batch, orderId, userId, product, productsRefs, item, sequence) {
     const dateString = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    let subsequence = 0
+    let subsequence = 0;
+    
     for (const productDoc of productsRefs) {
-        if (productDoc.exists()) {
-            const productData = productDoc.data();
-            const orderSlice = orderId.slice(-6).toUpperCase()
-            const userProductId = `USRPRD-${orderSlice}-${productData.name}-${dateString}${sequence}`
-            const productRef = db.collection('userProducts').doc(userId).collection('products').doc(userProductId)
-            if (productData.category == "ticket") {
-
-                const ticketNumber = `TCKT-${orderSlice}${userId}${dateString}${sequence}${subsequence}`
-                const ticketRef = db.collection('tickets').doc(ticketNumber);
-                console.log("Saving ticket on ref", ticketRef)
-                const product = {
-                    userId: userId,
-                    userProductIdRef: userProductId,
-                    status: 'active',
-                    validationSecret: generateValidationSecret(),
-                    valid: true,
-                    ticketNumber: ticketNumber,
-                    ticketId: productData.id,
-                    validForm: productData.validFrom,
-                    validUntil: productData.validUntil,
-                    eventId: productData.eventId,
-                    category: product.category
-                }
-                
-                batch.set(ticketRef, {
-                    userId: userId,
-                    userProductIdRef: userProductId,
-                    status: 'active',
-                    validationSecret: generateValidationSecret(),
-                    valid: true,
-                    ticketNumber: ticketNumber,
-                    ticketIdRef: productData.id,
-                    validForm: productData.validFrom,
-                    validUntil: productData.validUntil,
-                    eventId: productData.eventId,
-                    category: product.category
-                })
-                console.log("Saving user Product on ref", productRef)
-                batch.set(productRef, {
-                    userId: userId,
-                    userProductIdRef: userProductId,
-                    status: 'active',
-                    validationSecret: generateValidationSecret(),
-                    valid: true,
-                    ticketNumberRef: ticketNumber,
-                    productIdRef: productData.id,
-                    validForm: productData.validFrom,
-                    validUntil: productData.validUntil,
-                    eventId: productData.eventId,
-                    category: product.category
-                })
-            }
-            else {
-                console.log("Saving user Product on ref", productRef)
-                batch.set(productRef, {
-                    userId: userId,
-                    userProductIdRef: userProductId,
-                    status: 'active',
-                    validationSecret: generateValidationSecret(),
-                    valid: true,
-                    productId: productData.id,
-                    eventId: productData.eventId,
-                    category: product.category
-                })
-            }
+        const productData = productDoc.data();
+        const orderSlice = orderId.slice(-6).toUpperCase();
+        const userProductId = `USRPRD-${orderSlice}-${productDoc.id}-${dateString}${sequence}`;
+        const productRef = db.collection('userProducts').doc(userId).collection('products').doc(userProductId);
+        
+        console.log("productDoc ID:", productDoc.id);
+        console.log("Product Data", productData);
+        
+        if (productData.category === "ticket") {
+            const ticketNumber = `TCKT-${orderSlice}${userId}${dateString}${sequence}${subsequence}`;
+            const ticketRef = db.collection('tickets').doc(ticketNumber);
+            
+            
+            
+            // Create ticket document
+            batch.set(ticketRef, {
+                userId: userId,
+                userProductIdRef: userProductId,
+                status: 'active',
+                validationSecret: generateValidationSecret(),
+                valid: true,
+                ticketNumberRef: ticketNumber,
+                ticketId: productDoc.id,
+                validFrom: productData.validFrom, // Fixed typo
+                validUntil: productData.validUntil,
+                eventId: productData.eventId,
+                category: productData.category
+            });
+            
+            console.log("Saving user Product on ref", productRef);
+            
+            // Create user product document for ticket
+            batch.set(productRef, {
+                userId: userId,
+                userProductIdRef: userProductId,
+                status: 'active',
+                validationSecret: generateValidationSecret(),
+                valid: true,
+                ticketNumberRef: ticketNumber,
+                productIdRef: productDoc.id,
+                validFrom: productData.validFrom, // Fixed typo
+                validUntil: productData.validUntil,
+                eventId: productData.eventId,
+                category: productData.category // Fixed reference
+            });
+        } else {
+            console.log("Saving user Product on ref", productRef);
+            
+            // Create user product document for non-ticket
+            batch.set(productRef, {
+                userId: userId,
+                userProductIdRef: userProductId,
+                productIdRef: productDoc.id, // Fixed: removed duplicate productId
+                status: 'active',
+                validationSecret: generateValidationSecret(),
+                valid: true,
+                eventId: productData.eventId,
+                category: productData.category
+            });
         }
-
+        
+        subsequence++; // Increment subsequence for each product
     }
 }
 

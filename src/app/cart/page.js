@@ -96,34 +96,27 @@ export default function Cart() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="h-100% flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-foreground"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="h-100% bg-background text-foreground">
       {/* Header */}
-      <header className="border-b border-black/[.08] dark:border-white/[.145]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/" className="text-xl font-semibold">
-              Store
-            </Link>
-            <Link
+     
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex justify-between items-center h-16">
+          <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
+           <Link
               href="/shop"
-              className="text-sm hover:underline hover:underline-offset-4"
+              className="text-sm hover:underline hover:underline-offset-4 mb-8"
             >
               Continue Shopping
             </Link>
-          </div>
         </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
-
         {cart.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">
@@ -166,7 +159,7 @@ export default function Cart() {
                     <div className="flex-grow">
                       <h3 className="font-semibold text-lg">{item.name}</h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        ${item.price?.toFixed(2) || '0.00'} each
+                        {item.price?.toFixed(2) || '0.00'}€ l'uno
                       </p>
                     </div>
 
@@ -190,7 +183,7 @@ export default function Cart() {
                     {/* Item Total & Remove */}
                     <div className="text-right">
                       <p className="font-semibold">
-                        ${((item.price || 0) * item.quantity).toFixed(2)}
+                        €{((item.price || 0) * item.quantity).toFixed(2)}
                       </p>
                       <button
                         onClick={() => removeFromCart(item.id)}
@@ -212,20 +205,20 @@ export default function Cart() {
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>${getSubtotalAll().toFixed(2)}</span>
+                    <span>{getSubtotalAll().toFixed(2)}€</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Tax</span>
-                   <span>${getTax().toFixed(2)}</span>
+                    <span>{getTax().toFixed(2)}€</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Fees</span>
-                    <span>${getFees().toFixed(2)}</span>
+                    <span>{getFees().toFixed(2)}€</span>
                   </div>
                   <div className="border-t border-black/[.08] dark:border-white/[.145] pt-2">
                     <div className="flex justify-between font-semibold text-lg">
                       <span>Total</span>
-                      <span>${getTotal().toFixed(2)}</span>
+                      <span>{getTotal().toFixed(2)}€</span>
                     </div>
                   </div>
                 </div>
