@@ -369,6 +369,7 @@ async function createTicketUserProduct(batch, orderId, userId, product, products
             // Create ticket document
             batch.set(ticketRef, {
                 userId: userId,
+                name: productData.name,
                 userProductIdRef: userProductId,
                 status: 'active',
                 validationSecret: generateValidationSecret(),

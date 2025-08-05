@@ -10,7 +10,8 @@ import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail as firebaseSendPasswordResetEmail,
   signOut as firebaseSignOut,
-  signInWithRedirect
+  signInWithRedirect,
+  currentUser,
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, googleProvider, db } from '@/app/lib/firebase';
@@ -166,9 +167,24 @@ export const AuthProvider = ({ children }) => {
     }
   }, [user]);
 
+
+  const getUserIdToken = useCallback(async (forceRefresh = false) => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      try {
+        const idToken = await currentUser.getIdToken(forceRefresh);
+        return idToken;
+      } catch (error) {
+        console.error("Error getting user ID token:", error);
+        throw error;
+      }
+    }
+    return null;
+  }, []);
   const value = {
     user,
     loading,
+    getUserIdToken,
     signInWithGoogle,
     signInWithEmail,
     signUpWithEmail,

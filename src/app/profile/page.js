@@ -90,9 +90,9 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen text-gray-800 dark:text-gray-200">
+    <div className="min-h-screen text-gray-200">
       {/* Header with glassmorphism effect, now sticky */}
-      <header className="">
+      {/* <header className="">
         <div className="max-w-2xl mx-auto p-4 rounded-xl bg-white/50 dark:bg-black/50 backdrop-blur-lg shadow-lg border border-white/20 dark:border-white/10">
           <div className="flex justify-between items-center">
             <h1 className="text-xl font-bold">Profilo Utente</h1>
@@ -116,18 +116,18 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-      </header>
+      </header> */}
 
       {/* Main content area */}
       <main className="max-w-2xl mx-auto p-6">
         {/* Main form container with the glass effect */}
-        <div className="bg-white/30 dark:bg-black/30 backdrop-blur-lg p-8 rounded-2xl shadow-lg border border-white/20 dark:border-white/10">
+        <div className="bg-black/30 backdrop-blur-lg p-8 rounded-2xl shadow-lg border border-white/10">
           <div className="text-center mb-8">
-            <User className="w-16 h-16 mx-auto text-blue-600 dark:text-blue-500 mb-4" />
+            <User className="w-16 h-16 mx-auto text-blue-500 mb-4" />
             <h2 className="text-2xl font-bold mb-2">
               {isComplete ? 'Profilo Completo' : 'Completa il tuo Profilo'}
             </h2>
-            <p className="text-gray-700 dark:text-gray-300">
+            <p className="text-gray-300">
               {isComplete 
                 ? 'Le tue informazioni sono state salvate correttamente.'
                 : 'Per acquistare i biglietti, completa le tue informazioni.'
@@ -136,13 +136,13 @@ export default function ProfilePage() {
           </div>
 
           {isComplete && (
-            <div className="mb-6 p-4 bg-green-500/20 border border-green-500/30 text-green-800 dark:text-green-300 rounded-lg">
+            <div className="mb-6 p-4 bg-green-500/20 border border-green-500/30 text-green-300 rounded-lg">
               ✓ Profilo completato! Ora puoi acquistare i biglietti.
             </div>
           )}
 
           {errors.general && (
-            <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 text-red-800 dark:text-red-300 rounded-lg">
+            <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 text-red-300 rounded-lg">
               {errors.general}
             </div>
           )}
@@ -154,7 +154,7 @@ export default function ProfilePage() {
                 type="email"
                 value={user.email}
                 disabled
-                className="w-full px-4 py-3 border border-gray-400/50 rounded-lg bg-gray-500/10 text-gray-500 dark:text-gray-400"
+                className="w-full px-4 py-3 border border-gray-400/50 rounded-lg bg-gray-500/10 text-gray-400"
               />
             </div>
 
@@ -167,7 +167,7 @@ export default function ProfilePage() {
                         type="text"
                         value={formData[field]}
                         onChange={(e) => setFormData({ ...formData, [field]: field === 'codiceFiscale' ? e.target.value.toUpperCase() : e.target.value })}
-                        className={`w-full px-4 py-3 border rounded-lg bg-white/50 dark:bg-black/20 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                        className={`w-full px-4 py-3 border rounded-lg bg-black/20 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
                             errors[field] ? 'border-red-500/80' : 'border-gray-400/50'
                         }`}
                         placeholder={

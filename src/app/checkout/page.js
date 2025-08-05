@@ -192,7 +192,7 @@ export default function CheckoutPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Preparing secure checkout...</p>
+          <p className="text-gray-400">Preparing secure checkout...</p>
         </div>
       </div>
     );
@@ -204,7 +204,7 @@ export default function CheckoutPage() {
         <div className="max-w-md">
           <div className="text-red-500 text-6xl mb-4">⚠️</div>
           <h2 className="text-2xl font-bold text-red-500 mb-4">Checkout Error</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
+          <p className="text-gray-400 mb-6">{error}</p>
           <div className="space-y-3">
             <a
               href="/cart"
@@ -228,7 +228,7 @@ export default function CheckoutPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
         <h2 className="text-2xl font-bold mb-4">Authentication Required</h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">Please log in to continue with checkout.</p>
+        <p className="text-gray-400 mb-6">Please log in to continue with checkout.</p>
         <a
           href="/login"
           className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors"
@@ -254,17 +254,17 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black flex justify-center items-center p-4">
-      <div className="w-full max-w-md bg-white dark:bg-[#1a1a1a] rounded-xl shadow-lg p-8">
+    <div className="min-h-screen bg-black flex justify-center items-center p-4">
+      <div className="w-full max-w-md bg-[#1a1a1a] rounded-xl shadow-lg p-8">
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold mb-2">Secure Checkout</h1>
-          <p className="text-gray-600 dark:text-gray-400 text-sm">
+          <p className="text-gray-400 text-sm">
             Complete your payment safely with Stripe
           </p>
         </div>
 
         {/* Order Summary */}
-        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <div className="mb-6 p-4 bg-gray-800 rounded-lg">
           <h3 className="font-semibold mb-2">Order Summary</h3>
           <div className="space-y-1 text-sm">
             {cart.map((item, index) => (

@@ -48,7 +48,7 @@ export  function CompletionPageInner() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
         <h1 className="text-3xl font-bold text-green-600 mb-4">Payment Successful!</h1>
-        <p className="text-gray-700 dark:text-gray-300 mb-6">
+        <p className="text-gray-300 mb-6">
           Thank you for your order. A confirmation has been sent to your email.
         </p>
         <Link href="/shop" className="bg-foreground text-background px-6 py-2 rounded-full">
@@ -62,7 +62,7 @@ export  function CompletionPageInner() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
         <h1 className="text-3xl font-bold text-red-500 mb-4">Payment Failed</h1>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
+        <p className="text-gray-400 mb-6">{error}</p>
         <Link href="/cart" className="bg-foreground text-background px-6 py-2 rounded-full">
           Return to Cart
         </Link>

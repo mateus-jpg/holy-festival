@@ -34,7 +34,7 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center text-center p-8">
       <h1 className="text-4xl font-bold mb-4">Welcome to Holy Festival 2025</h1>
-      <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
+      <p className="text-lg text-gray-400 mb-8">
         You are successfully logged in as {user.email}.
       </p>
       <div className="flex gap-4">
@@ -46,7 +46,7 @@ export default function Home() {
         </Link>
         <Link 
           href="/shop"
-          className="bg-foreground text-background px-6 py-3 rounded-full hover:bg-[#383838] dark:hover:bg-[#ccc] transition-colors"
+          className="bg-foreground text-background px-6 py-3 rounded-full hover:bg-[#ccc] transition-colors"
         >
           Browse the Shop
         </Link>

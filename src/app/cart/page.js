@@ -119,12 +119,12 @@ export default function Cart() {
         </div>
         {cart.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">
+            <p className="text-lg text-gray-400 mb-4">
               Your cart is empty
             </p>
             <Link
               href="/shop"
-              className="bg-foreground text-background px-6 py-3 rounded-full hover:bg-[#383838] dark:hover:bg-[#ccc] transition-colors inline-block"
+              className="bg-foreground text-background px-6 py-3 rounded-full hover:bg-[#ccc] transition-colors inline-block"
             >
               Start Shopping
             </Link>
@@ -137,10 +137,10 @@ export default function Cart() {
                 {cart.map((item) => (
                   <div
                     key={item.id}
-                    className="border border-black/[.08] dark:border-white/[.145] rounded-lg p-4 flex items-center gap-4"
+                    className="border border-white/[.145] rounded-lg p-4 flex items-center gap-4"
                   >
                     {/* Product Image */}
-                    <div className="w-20 h-20 relative bg-gray-100 dark:bg-gray-800 rounded-lg flex-shrink-0">
+                    <div className="w-20 h-20 relative bg-gray-800 rounded-lg flex-shrink-0">
                       {item.imageUrl ? (
                         <Image
                           src={item.imageUrl}
@@ -158,7 +158,7 @@ export default function Cart() {
                     {/* Product Details */}
                     <div className="flex-grow">
                       <h3 className="font-semibold text-lg">{item.name}</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-gray-400">
                         {item.price?.toFixed(2) || '0.00'}€ l'uno
                       </p>
                     </div>
@@ -167,14 +167,14 @@ export default function Cart() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="w-8 h-8 rounded-full border border-black/[.08] dark:border-white/[.145] hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] transition-colors flex items-center justify-center"
+                        className="w-8 h-8 rounded-full border :border-white/[.145] hover:bg-[#1a1a1a]  transition-colors flex items-center justify-center"
                       >
                         −
                       </button>
                       <span className="w-8 text-center">{item.quantity}</span>
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="w-8 h-8 rounded-full border border-black/[.08] dark:border-white/[.145] hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] transition-colors flex items-center justify-center"
+                        className="w-8 h-8 rounded-full border border-white/[.145] hover:bg-[#1a1a1a]  transition-colors flex items-center justify-center"
                       >
                         +
                       </button>
@@ -199,7 +199,7 @@ export default function Cart() {
 
             {/* Order Summary */}
             <div className="lg:col-span-1">
-              <div className="border border-black/[.08] dark:border-white/[.145] rounded-lg p-6 sticky top-4">
+              <div className="border border-white/[.145]  rounded-lg p-6 sticky top-4">
                 <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
 
                 <div className="space-y-2 mb-4">
@@ -215,7 +215,7 @@ export default function Cart() {
                     <span>Fees</span>
                     <span>{getFees().toFixed(2)}€</span>
                   </div>
-                  <div className="border-t border-black/[.08] dark:border-white/[.145] pt-2">
+                  <div className="border-t border-white/[.145]  pt-2">
                     <div className="flex justify-between font-semibold text-lg">
                       <span>Total</span>
                       <span>{getTotal().toFixed(2)}€</span>
@@ -225,7 +225,7 @@ export default function Cart() {
 
                 <button
                   onClick={handleCheckout}
-                  className="w-full bg-foreground text-background py-3 rounded-full font-medium hover:bg-[#383838] dark:hover:bg-[#ccc] transition-colors"
+                  className="w-full bg-foreground text-background py-3 rounded-full font-medium hover:bg-[#ccc] transition-colors"
                 >
                   Proceed to Checkout
                 </button>

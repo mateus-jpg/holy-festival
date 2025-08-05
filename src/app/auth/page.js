@@ -171,10 +171,16 @@ export default function AuthPage() {
     const AuthForm = useMemo(() => (
         <>
             <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                <div className="w-16 h-16 mx-auto mb-4 bg-blue-500/20 rounded-full flex items-center justify-center">
+                    {mode === 'login' ? 
+                        <LogIn className="w-8 h-8 text-blue-400" /> : 
+                        <UserPlus className="w-8 h-8 text-blue-400" />
+                    }
+                </div>
+                <h1 className="text-3xl font-bold text-gray-200 mb-2">
                     {mode === 'login' ? 'Accedi' : 'Registrati'}
                 </h1>
-                <p className="text-gray-600">
+                <p className="text-gray-400">
                     {mode === 'login' ? 'Accedi al tuo account' : 'Crea un nuovo account'}
                 </p>
             </div>
@@ -183,7 +189,7 @@ export default function AuthPage() {
                 <button
                     onClick={handleGoogleSignIn}
                     disabled={isPageBusy}
-                    className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-300 text-gray-700 p-3 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 text-gray-200 p-3 rounded-lg hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                 >
                     <GoogleIcon />
                     Continua con Google
@@ -192,16 +198,16 @@ export default function AuthPage() {
 
             <div className="relative mb-6">
                 <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300" />
+                    <div className="w-full border-t border-gray-400/30" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-500">o</span>
+                    <span className="px-2 bg-black/30 text-gray-400">o</span>
                 </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 sr-only">Email</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
                     <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <input
@@ -210,17 +216,17 @@ export default function AuthPage() {
                             value={formData.email}
                             onChange={handleInputChange}
                             disabled={isPageBusy}
-                            className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent disabled:bg-gray-100 transition-colors ${errors.email ? 'border-red-500 ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                            className={`w-full pl-10 pr-4 py-3 border rounded-lg bg-black/20 text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-500/20 transition-colors ${errors.email ? 'border-red-500/80' : 'border-gray-400/50'
                                 }`}
                             placeholder="tua@email.com"
                             autoComplete="email"
                         />
                     </div>
-                    {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+                    {errors.email && <p className="mt-1 text-sm text-red-400">{errors.email}</p>}
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 sr-only">Password</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
                     <div className="relative">
                         <LogIn className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <input
@@ -229,19 +235,19 @@ export default function AuthPage() {
                             value={formData.password}
                             onChange={handleInputChange}
                             disabled={isPageBusy}
-                            className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent disabled:bg-gray-100 transition-colors ${errors.password ? 'border-red-500 ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                            className={`w-full pl-10 pr-4 py-3 border rounded-lg bg-black/20 text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-500/20 transition-colors ${errors.password ? 'border-red-500/80' : 'border-gray-400/50'
                                 }`}
                             placeholder="Password"
                             autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                         />
                     </div>
-                    {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
+                    {errors.password && <p className="mt-1 text-sm text-red-400">{errors.password}</p>}
                 </div>
 
                 <button
                     type="submit"
                     disabled={isPageBusy}
-                    className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
+                    className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center shadow-lg"
                 >
                     {loading ? <LoadingSpinner /> : (mode === 'login' ? 'Accedi' : 'Registrati')}
                 </button>
@@ -250,7 +256,7 @@ export default function AuthPage() {
             <div className="flex justify-between items-center mt-6 text-sm">
                 <button
                     onClick={() => switchMode(mode === 'login' ? 'signup' : 'login')}
-                    className="text-blue-600 hover:underline disabled:opacity-50"
+                    className="text-blue-400 hover:text-blue-300 hover:underline disabled:opacity-50 transition-colors"
                     disabled={isPageBusy}
                 >
                     {mode === 'login' ? 'Non hai un account? Registrati' : 'Hai già un account? Accedi'}
@@ -258,7 +264,7 @@ export default function AuthPage() {
                 {mode === 'login' && (
                     <button
                         onClick={() => switchMode('reset')}
-                        className="text-gray-500 hover:underline disabled:opacity-50"
+                        className="text-gray-400 hover:text-gray-300 hover:underline disabled:opacity-50 transition-colors"
                         disabled={isPageBusy}
                     >
                         Password dimenticata?
@@ -271,19 +277,22 @@ export default function AuthPage() {
     const ResetForm = useMemo(() => (
         <>
             <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold text-gray-800">Recupera Password</h1>
-                <p className="text-gray-600 mt-2">Inserisci la tua email per ricevere un link di recupero.</p>
+                <div className="w-16 h-16 mx-auto mb-4 bg-blue-500/20 rounded-full flex items-center justify-center">
+                    <Mail className="w-8 h-8 text-blue-400" />
+                </div>
+                <h1 className="text-3xl font-bold text-gray-200 mb-2">Recupera Password</h1>
+                <p className="text-gray-400">Inserisci la tua email per ricevere un link di recupero.</p>
             </div>
 
             {resetSuccess ? (
-                <div className="p-4 bg-green-100 border border-green-400 text-green-700 rounded text-center flex items-center justify-center">
+                <div className="p-4 bg-green-500/20 border border-green-500/30 text-green-300 rounded-lg text-center flex items-center justify-center">
                     <CheckCircle className="w-5 h-5 mr-2" />
                     Email di recupero inviata!
                 </div>
             ) : (
                 <form onSubmit={handlePasswordReset} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2 sr-only">Email</label>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
                         <div className="relative">
                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                             <input
@@ -292,19 +301,19 @@ export default function AuthPage() {
                                 value={formData.email}
                                 onChange={handleInputChange}
                                 disabled={isPageBusy}
-                                className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent disabled:bg-gray-100 transition-colors ${errors.email ? 'border-red-500 ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                                className={`w-full pl-10 pr-4 py-3 border rounded-lg bg-black/20 text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-500/20 transition-colors ${errors.email ? 'border-red-500/80' : 'border-gray-400/50'
                                     }`}
                                 placeholder="tua@email.com"
                                 autoComplete="email"
                             />
                         </div>
-                        {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+                        {errors.email && <p className="mt-1 text-sm text-red-400">{errors.email}</p>}
                     </div>
 
                     <button
                         type="submit"
                         disabled={isPageBusy}
-                        className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
+                        className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center shadow-lg"
                     >
                         {loading ? <LoadingSpinner /> : 'Invia Email di Recupero'}
                     </button>
@@ -314,7 +323,7 @@ export default function AuthPage() {
             <div className="text-center mt-6">
                 <button
                     onClick={() => switchMode('login')}
-                    className="text-blue-600 hover:underline disabled:opacity-50"
+                    className="text-blue-400 hover:text-blue-300 hover:underline disabled:opacity-50 transition-colors"
                     disabled={isPageBusy}
                 >
                     Torna al Login
@@ -326,17 +335,17 @@ export default function AuthPage() {
     // Show loading spinner while auth is initializing
     if (authLoading && !user) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600" />
+            <div className="h-100% flex items-center align-middle justify-center text-gray-200">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-start justify-center pt-12 sm:pt-0 sm:items-center p-4">
-            <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
+        <div className="h-100% content-center text-gray-200 flex align-middle items-start  justify-center mt-12 sm:pt-0 sm:items-center p-4">
+            <div className="max-w-md w-full bg-black/30 backdrop-blur-lg rounded-2xl shadow-lg border border-white/10 p-8">
                 {firebaseError && (
-                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded flex items-center">
+                    <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 text-red-300 rounded-lg flex items-center">
                         <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
                         {firebaseError}
                     </div>

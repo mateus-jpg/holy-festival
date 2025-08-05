@@ -112,7 +112,7 @@ export default function Products() {
             <h1 className="text-3xl font-bold mb-6">Our Products</h1>
              <Link 
                 href="/cart" 
-                className="relative bg-foreground text-background px-4 py-2 rounded-full hover:bg-[#383838] dark:hover:bg-[#ccc] transition-colors"
+                className="relative bg-foreground text-background px-4 py-2 rounded-full hover:bg-[#ccc] transition-colors"
               >
                 Cart ({getCartItemCount()})
               </Link>
@@ -124,7 +124,7 @@ export default function Products() {
                 onClick={() => setSelectedCategory(category)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedCategory === category
                   ? 'bg-foreground text-background'
-                  : 'border border-black/[.08] dark:border-white/[.145] hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a]'
+                  : 'border border-white/[.145] hover:bg-[#1a1a1a]'
                   }`}
               >
                 {category}
@@ -136,7 +136,7 @@ export default function Products() {
         {/* Products Grid */}
         {filteredProducts.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-lg text-gray-600 dark:text-gray-400">
+            <p className="text-lg text-gray-400">
               No products found in this category.
             </p>
           </div>
@@ -145,10 +145,10 @@ export default function Products() {
             {filteredProducts.map((product) => (
               <div
                 key={product.id}
-                className="border border-black/[.08] dark:border-white/[.145] rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+                className="border border-white/[.145] rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
               >
                 {/* Product Image */}
-                <div className="aspect-square relative bg-gray-100 dark:bg-gray-800">
+                <div className="aspect-square relative bg-gray-800">
                   {product.imgUrl ? (
                     <Image
                       src={product.imageUrl}
@@ -169,7 +169,7 @@ export default function Products() {
                     {product.name}
                   </h3>
                   {product.description && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                    <p className="text-sm text-gray-400 mb-3 line-clamp-2">
                       {product.description}
                     </p>
                   )}
@@ -180,7 +180,7 @@ export default function Products() {
                     {product.availableStock && product.availableStock > 0 ? (
                       <button
                         onClick={() => addToCart(product)}
-                        className="bg-foreground text-background px-4 py-2 rounded-full text-sm font-medium hover:bg-[#383838] dark:hover:bg-[#ccc] transition-colors"
+                        className="bg-foreground text-background px-4 py-2 rounded-full text-sm font-medium hover:bg-[#ccc] transition-colors"
                       >
                         Add to Cart
                       </button>
