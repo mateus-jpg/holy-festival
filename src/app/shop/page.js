@@ -175,7 +175,7 @@ export default function Products() {
                   )}
                   <div className="flex items-center justify-between">
                     <span className="text-xl font-bold">
-                      ${product.price?.toFixed(2) || '0.00'}
+                      €{product.price?.toFixed(2) || '0.00'}
                     </span>
                     {product.availableStock && product.availableStock > 0 ? (
                       <button
