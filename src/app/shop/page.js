@@ -151,7 +151,7 @@ export default function Products() {
                 <div className="aspect-square relative bg-gray-800">
                   {product.imgUrl ? (
                     <Image
-                      src={product.imageUrl}
+                      src={product.imgUrl}
                       alt={product.name}
                       fill
                       className="object-cover"
