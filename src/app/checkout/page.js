@@ -16,7 +16,7 @@ async function createPaymentIntentAndOrder(cart, user) {
 
   const getSubtotalWithFees = () => {
     return cart
-      .filter((item) => "withFees" in item && item.withFees)
+      .filter((item) => 'withFees' in item && item.withFees)
       .reduce((total, item) => total + item.price * item.quantity, 0);
   };
 
@@ -26,7 +26,7 @@ async function createPaymentIntentAndOrder(cart, user) {
 
   const getFees = (feeBase) => {
     return feeBase > 0
-      ? (feeBase * AppConfig.TRANSACTION_RATE) + AppConfig.TRANSACTION_FEE
+      ? feeBase * AppConfig.TRANSACTION_RATE + AppConfig.TRANSACTION_FEE
       : 0;
   };
 
@@ -36,9 +36,8 @@ async function createPaymentIntentAndOrder(cart, user) {
   const tax = getTax(subtotalAll);
 
   // Proportional tax share for items with fees
-  const taxOnWithFees = subtotalAll > 0
-    ? (subtotalWithFees / subtotalAll) * tax
-    : 0;
+  const taxOnWithFees =
+    subtotalAll > 0 ? (subtotalWithFees / subtotalAll) * tax : 0;
 
   const feeBase = subtotalWithFees + taxOnWithFees;
   const fees = getFees(feeBase);
@@ -61,7 +60,9 @@ async function createPaymentIntentAndOrder(cart, user) {
 
     if (!paymentResponse.ok) {
       const { error } = await paymentResponse.json();
-      throw new Error(error || 'Failed to create payment intent');
+      throw new Error(
+        error || 'Creazione del payment intent non riuscita'
+      );
     }
 
     const paymentData = await paymentResponse.json();
@@ -82,12 +83,14 @@ async function createPaymentIntentAndOrder(cart, user) {
           subtotal: Math.round(subtotalAll * 100),
           tax: Math.round(tax * 100),
           fees: Math.round(fees * 100),
-          clientSecret: paymentData.client_secret
+          clientSecret: paymentData.client_secret,
         }),
       });
 
       if (!orderResponse.ok) {
-        console.error('Failed to save initial order, but payment intent created');
+        console.error(
+          'Failed to save initial order, but payment intent created'
+        );
         // Don't throw error here - payment intent is created, webhook will handle order
       } else {
         console.log('Initial order saved successfully');
@@ -98,7 +101,6 @@ async function createPaymentIntentAndOrder(cart, user) {
     }
 
     return paymentData;
-
   } catch (error) {
     console.error('Error in payment flow:', error);
     throw error;
@@ -118,7 +120,7 @@ export default function CheckoutPage() {
       try {
         // Check if user is authenticated
         if (!user) {
-          setError('Please log in to continue with checkout.');
+          setError('Accedi per continuare con il checkout.');
           setLoading(false);
           return;
         }
@@ -126,23 +128,24 @@ export default function CheckoutPage() {
         // Get cart from localStorage
         const savedCart = JSON.parse(localStorage.getItem('cart') || '[]');
         if (savedCart.length === 0) {
-          setError('Your cart is empty.');
+          setError('Il tuo carrello è vuoto.');
           setLoading(false);
           return;
         }
 
         // Validate cart items
-        const validatedCart = savedCart.filter(item =>
-          item.id &&
-          item.name &&
-          typeof item.price === 'number' &&
-          item.price > 0 &&
-          typeof item.quantity === 'number' &&
-          item.quantity > 0
+        const validatedCart = savedCart.filter(
+          (item) =>
+            item.id &&
+            item.name &&
+            typeof item.price === 'number' &&
+            item.price > 0 &&
+            typeof item.quantity === 'number' &&
+            item.quantity > 0
         );
 
         if (validatedCart.length === 0) {
-          setError('Your cart contains invalid items.');
+          setError('Il tuo carrello contiene articoli non validi.');
           setLoading(false);
           return;
         }
@@ -158,10 +161,11 @@ export default function CheckoutPage() {
         const data = await createPaymentIntentAndOrder(validatedCart, user);
         setClientSecret(data.client_secret);
         setPaymentIntentId(data.payload.id);
-
       } catch (err) {
         console.error('Checkout initialization error:', err);
-        setError(err.message || 'Failed to initialize checkout');
+        setError(
+          err.message || 'Inizializzazione del checkout non riuscita'
+        );
       } finally {
         setLoading(false);
       }
@@ -184,7 +188,7 @@ export default function CheckoutPage() {
   // Handle payment error (called from CheckoutForm)
   const handlePaymentError = (error) => {
     console.error('Payment error:', error);
-    setError(error.message || 'Payment failed. Please try again.');
+    setError(error.message || 'Pagamento non riuscito. Riprova.');
   };
 
   if (loading) {
@@ -192,7 +196,9 @@ export default function CheckoutPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-          <p className="text-gray-400">Preparing secure checkout...</p>
+          <p className="text-gray-400">
+            Preparazione del checkout sicuro in corso...
+          </p>
         </div>
       </div>
     );
@@ -203,20 +209,22 @@ export default function CheckoutPage() {
       <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
         <div className="max-w-md">
           <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-red-500 mb-4">Checkout Error</h2>
+          <h2 className="text-2xl font-bold text-red-500 mb-4">
+            Errore nel Checkout
+          </h2>
           <p className="text-gray-400 mb-6">{error}</p>
           <div className="space-y-3">
             <a
               href="/cart"
               className="block bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors"
             >
-              Return to Cart
+              Torna al Carrello
             </a>
             <button
               onClick={() => window.location.reload()}
               className="block w-full bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded-lg transition-colors"
             >
-              Try Again
+              Riprova
             </button>
           </div>
         </div>
@@ -227,13 +235,15 @@ export default function CheckoutPage() {
   if (!user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
-        <h2 className="text-2xl font-bold mb-4">Authentication Required</h2>
-        <p className="text-gray-400 mb-6">Please log in to continue with checkout.</p>
+        <h2 className="text-2xl font-bold mb-4">Autenticazione Richiesta</h2>
+        <p className="text-gray-400 mb-6">
+          Accedi per continuare con il checkout.
+        </p>
         <a
           href="/login"
           className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors"
         >
-          Log In
+          Accedi
         </a>
       </div>
     );
@@ -249,28 +259,30 @@ export default function CheckoutPage() {
         colorText: '#1f2937',
         fontFamily: 'system-ui, sans-serif',
         borderRadius: '8px',
-      }
-    }
+      },
+    },
   };
 
   return (
     <div className="min-h-screen bg-black flex justify-center items-center p-4">
       <div className="w-full max-w-md bg-[#1a1a1a] rounded-xl shadow-lg p-8">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold mb-2">Secure Checkout</h1>
+          <h1 className="text-2xl font-bold mb-2">Checkout Sicuro</h1>
           <p className="text-gray-400 text-sm">
-            Complete your payment safely with Stripe
+            Completa il tuo pagamento in sicurezza con Stripe
           </p>
         </div>
 
         {/* Order Summary */}
         <div className="mb-6 p-4 bg-gray-800 rounded-lg">
-          <h3 className="font-semibold mb-2">Order Summary</h3>
+          <h3 className="font-semibold mb-2">Riepilogo Ordine</h3>
           <div className="space-y-1 text-sm">
             {cart.map((item, index) => (
               <div key={index} className="flex justify-between">
-                <span>{item.name} x{item.quantity}</span>
-                <span>${(item.price * item.quantity).toFixed(2)}</span>
+                <span>
+                  {item.name} x{item.quantity}
+                </span>
+                <span>€{(item.price * item.quantity).toFixed(2)}</span>
               </div>
             ))}
           </div>

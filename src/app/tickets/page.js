@@ -259,9 +259,9 @@ export default function Tickets() {
                 >
                   {/* Ticket Image */}
                   <div className="aspect-[4/3] relative bg-gradient-to-br from-white/20 to-white/5">
-                    {ticket.imageUrl ? (
+                    {ticket.imgUrl ? (
                       <Image
-                        src={ticket.imageUrl}
+                        src={ticket.imgUrl}
                         alt={ticket.name}
                         fill
                         className="object-cover"

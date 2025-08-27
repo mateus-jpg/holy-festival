@@ -41,7 +41,7 @@ export default function CheckoutForm({
             if (error) {
                 // Payment failed
                 console.error('Payment error:', error);
-                setMessage(error.message || 'An unexpected error occurred.');
+                setMessage(error.message || 'Si è verificato un errore imprevisto.');
                 onPaymentError?.(error);
             } else if (paymentIntent) {
                 // Payment succeeded
@@ -56,7 +56,7 @@ export default function CheckoutForm({
             }
         } catch (err) {
             console.error('Unexpected error:', err);
-            setMessage('An unexpected error occurred.');
+            setMessage('Si è verificato un errore imprevisto.');
             onPaymentError?.(err);
         } finally {
             setIsLoading(false);

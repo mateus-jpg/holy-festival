@@ -5,6 +5,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { collection, getDocs, query, orderBy, where } from 'firebase/firestore';
 import { db } from '@/app/lib/firebase'; // You'll need to create this
+import { useAuth } from '@/app/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
+import { set } from 'zod';
+// Importa react-hot-toast
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -13,6 +18,8 @@ export default function Products() {
   const [categories, setCategories] = useState(['All']);
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState([]);
+  const router = useRouter();
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchProducts();
@@ -31,19 +38,14 @@ export default function Products() {
       );
       const querySnapshot = await getDocs(q);
       const productsData = [];
-      const categoriesSet = new Set(['All']);
 
       querySnapshot.forEach((doc) => {
         console.log(doc)
         const product = { id: doc.id, ...doc.data() };
         productsData.push(product);
-        if (product.category) {
-          categoriesSet.add(product.category);
-        }
       });
 
       setProducts(productsData);
-      setCategories(Array.from(categoriesSet));
       setLoading(false);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -67,6 +69,8 @@ export default function Products() {
   };
 
   const addToCart = (product) => {
+    console.log('Adding to cart:', product);
+
     const existingItem = cart.find(item => item.id === product.id);
     let updatedCart;
 
@@ -83,8 +87,19 @@ export default function Products() {
     setCart(updatedCart);
     localStorage.setItem('cart', JSON.stringify(updatedCart));
 
-    // Show success feedback
-    alert(`${product.name} added to cart!`);
+    // Sostituisci l'alert con un toast
+    toast.success(`${product.name} aggiunto al carrello!`, {
+      duration: 3000,
+      position: 'bottom-center',
+      // Stile personalizzato
+      style: {
+        background: '#10B981',
+        color: '#fff',
+        fontWeight: '500',
+      },
+      // Icona personalizzata
+      icon: '🛒',
+    });
   };
 
   const getCartItemCount = () => {
@@ -102,35 +117,12 @@ export default function Products() {
   return (
     <div className="h-100% bg-background text-foreground">
       {/* Header */}
-    
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {/* Category Filter */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center h-16">
 
-            <h1 className="text-3xl font-bold mb-6">Our Products</h1>
-             <Link 
-                href="/cart" 
-                className="relative bg-foreground text-background px-4 py-2 rounded-full hover:bg-[#ccc] transition-colors"
-              >
-                Cart ({getCartItemCount()})
-              </Link>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedCategory === category
-                  ? 'bg-foreground text-background'
-                  : 'border border-white/[.145] hover:bg-[#1a1a1a]'
-                  }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
+        <div className="flex justify-between items-center h-16">
+          <h1 className="text-3xl font-bold mb-8">Shop</h1>
         </div>
 
         {/* Products Grid */}
@@ -182,21 +174,23 @@ export default function Products() {
                         onClick={() => addToCart(product)}
                         className="bg-foreground text-background px-4 py-2 rounded-full text-sm font-medium hover:bg-[#ccc] transition-colors"
                       >
-                        Add to Cart
+                        Aggiungi al Carrello
                       </button>
                     ) : (
                       <span className="text-red-500 text-sm font-medium">
-                        Out of Stock
+                        Non più disponibile
                       </span>
                     )}
                   </div>
                 </div>
               </div>
             ))}
-
           </div>
         )}
       </div>
+      
+      {/* Componente Toaster per mostrare i toast */}
+      <Toaster />
     </div>
   );
 }

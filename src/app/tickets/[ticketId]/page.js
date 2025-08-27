@@ -279,10 +279,10 @@ export default function SingleTicket() {
         <div className={`backdrop-blur-md bg-white/10 rounded-3xl border-2 ${styling.borderColor} shadow-2xl overflow-hidden`}>
           {/* Header */}
           <div className="relative">
-            {ticket.imageUrl && (
+            {ticket.imgUrl && (
               <div className="h-48 relative">
                 <Image
-                  src={ticket.imageUrl}
+                  src={ticket.imgUrl}
                   alt={ticket.name}
                   fill
                   className="object-cover"
