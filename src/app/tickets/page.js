@@ -6,13 +6,13 @@ import Link from 'next/link';
 import { collection, getDocs, query, orderBy, where } from 'firebase/firestore';
 import { db } from '@/app/lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
-import { Filter, Calendar, Euro, Clock, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { Filter, Calendar, Euro, Clock, CheckCircle, XCircle, AlertTriangle, Calendar as CalendarUpcoming } from 'lucide-react';
 
 export default function Tickets() {
   const [tickets, setTickets] = useState([]);
   const [filteredTickets, setFilteredTickets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState('all'); // all, valid, expired, used
+  const [statusFilter, setStatusFilter] = useState('all'); // all, valid, expired, used, upcoming
   const { user } = useAuth();
 
   useEffect(() => {
@@ -35,8 +35,9 @@ export default function Tickets() {
     const validFrom = ticket.validFrom.toDate ? ticket.validFrom.toDate() : new Date(ticket.validFrom);
     const validUntil = ticket.validUntil.toDate ? ticket.validUntil.toDate() : new Date(ticket.validUntil);
     
-    if (now < validFrom || now > validUntil) return 'expired';
-    return 'valid';
+    if (now < validFrom) return 'upcoming'; // Not yet valid
+    if (now > validUntil) return 'expired'; // Expired
+    return 'valid'; // Currently valid
   };
 
   // Function to get ticket styling based on status
@@ -49,6 +50,14 @@ export default function Tickets() {
           icon: CheckCircle,
           borderColor: 'border-green-400/30',
           bgHover: 'hover:bg-green-500/10'
+        };
+      case 'upcoming':
+        return {
+          badgeBg: 'bg-blue-500/80',
+          badgeText: 'In Arrivo',
+          icon: CalendarUpcoming,
+          borderColor: 'border-blue-400/30',
+          bgHover: 'hover:bg-blue-500/10'
         };
       case 'expired':
         return {
@@ -79,7 +88,6 @@ export default function Tickets() {
 
   const fetchTickets = async () => {
     try {
-      console.log(user);
       let q;
       
       // If user is admin, fetch all tickets, otherwise only user's tickets
@@ -90,14 +98,32 @@ export default function Tickets() {
       
       const querySnapshot = await getDocs(q);
       const ticketsData = [];
+      const ticketReferences = new Set();
 
       querySnapshot.forEach((doc) => {
         console.log(doc)
         const ticket = { id: doc.id, ...doc.data() };
         ticketsData.push(ticket);
+        ticketReferences.add(ticket.ticketId);
       });
 
+        // Fetch ticket details for each unique ticketId
+        const ticketDetailsMap = {};
+        const ticketQuery = query(
+            collection(db, 'ticketDetails'),
+            where('id', 'in', Array.from(ticketReferences))
+        );
+        const ticketDetailsSnapshot = await getDocs(ticketQuery);
+        ticketDetailsSnapshot.forEach((doc) => {
+            ticketDetailsMap[doc.id] = doc.data();
+        });
+
+        // Merge ticket details into ticketsData
+
+
+
       setTickets(ticketsData);
+
       setLoading(false);
     } catch (error) {
       console.error('Error fetching tickets:', error);
@@ -107,7 +133,7 @@ export default function Tickets() {
 
   const filterTickets = () => {
     let filtered = tickets;
-
+          console.log(tickets);
     if (statusFilter !== 'all') {
       filtered = tickets.filter(ticket => {
         const status = getTicketStatus(ticket);
@@ -123,6 +149,7 @@ export default function Tickets() {
     const counts = {
       all: tickets.length,
       valid: 0,
+      upcoming: 0,
       expired: 0,
       used: 0
     };
@@ -195,6 +222,19 @@ export default function Tickets() {
             </button>
             
             <button
+              onClick={() => setStatusFilter('upcoming')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+                statusFilter === 'upcoming'
+                  ? 'bg-blue-500/20 text-blue-300 border border-blue-400/30'
+                  : 'bg-white/10 text-white/80 hover:bg-blue-500/10'
+              }`}
+            >
+              <CalendarUpcoming className="w-4 h-4" />
+              In Arrivo
+              <span className="bg-white/20 px-2 py-1 rounded-full text-xs">{counts.upcoming}</span>
+            </button>
+            
+            <button
               onClick={() => setStatusFilter('expired')}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
                 statusFilter === 'expired'
@@ -236,6 +276,7 @@ export default function Tickets() {
                   ? (user.isAdmin ? 'Nessun biglietto trovato' : 'Non hai ancora acquistato biglietti')
                   : `Nessun biglietto ${
                       statusFilter === 'valid' ? 'valido' :
+                      statusFilter === 'upcoming' ? 'in arrivo' :
                       statusFilter === 'expired' ? 'scaduto' : 'utilizzato'
                     } trovato`
                 }
@@ -293,7 +334,7 @@ export default function Tickets() {
                       </div>
                     )}
 
-                    {/* Status overlay for expired/used tickets */}
+                    {/* Status overlay for non-valid tickets */}
                     {status !== 'valid' && (
                       <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                         <div className="text-white text-center opacity-80">
@@ -327,6 +368,16 @@ export default function Tickets() {
                           <Euro className="w-4 h-4 mr-2" />
                           <span className="text-sm font-medium">
                             €{ticket.price.toFixed(2)}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Validity period for upcoming tickets */}
+                      {status === 'upcoming' && ticket.validFrom && (
+                        <div className="flex items-center text-blue-300">
+                          <CalendarUpcoming className="w-4 h-4 mr-2" />
+                          <span className="text-xs">
+                            Valido dal {formatDate(ticket.validFrom)}
                           </span>
                         </div>
                       )}
@@ -367,6 +418,8 @@ export default function Tickets() {
                       className={`block w-full font-medium py-3 px-4 rounded-xl text-center transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl ${
                         status === 'valid'
                           ? 'bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white'
+                          : status === 'upcoming'
+                          ? 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'
                           : status === 'expired'
                           ? 'bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white'
                           : 'bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white'
@@ -383,7 +436,7 @@ export default function Tickets() {
 
         {/* Summary Statistics */}
         {tickets.length > 0 && (
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-5 gap-4">
             <div className="backdrop-blur-md bg-white/10 rounded-2xl p-6 border border-white/20">
               <div className="flex items-center justify-between">
                 <div>
@@ -401,6 +454,16 @@ export default function Tickets() {
                   <p className="text-2xl font-bold text-green-300">{counts.valid}</p>
                 </div>
                 <CheckCircle className="w-8 h-8 text-green-400" />
+              </div>
+            </div>
+            
+            <div className="backdrop-blur-md bg-blue-500/10 rounded-2xl p-6 border border-blue-400/30">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-blue-300 text-sm">In Arrivo</p>
+                  <p className="text-2xl font-bold text-blue-300">{counts.upcoming}</p>
+                </div>
+                <CalendarUpcoming className="w-8 h-8 text-blue-400" />
               </div>
             </div>
             

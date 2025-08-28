@@ -376,6 +376,7 @@ async function createTicketUserProduct(batch, orderId, userId, product, products
                 valid: true,
                 ticketNumberRef: ticketNumber,
                 ticketId: productDoc.id,
+                imgUrl: productData.imgUrl || null,
                 validFrom: productData.validFrom, // Fixed typo
                 validUntil: productData.validUntil,
                 eventId: productData.eventId,
