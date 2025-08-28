@@ -8,12 +8,16 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/app/lib/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { QRCodeSVG } from 'qrcode.react';
-import { TicketCheck, Clock, AlertTriangle } from 'lucide-react';
+import { TicketCheck, Clock, AlertTriangle, Calendar, X, Check } from 'lucide-react';
+// Importa react-hot-toast
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function SingleTicket() {
   const [ticket, setTicket] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [validating, setValidating] = useState(false);
   const { user, getUserIdToken } = useAuth();
   const params = useParams();
   const router = useRouter();
@@ -27,7 +31,7 @@ export default function SingleTicket() {
 
   // Enhanced date validation function
   const isTicketDateValid = () => {
-    if (!ticket || !ticket.validFrom || !ticket.validUntil) return false;
+    if (!ticket || !ticket.validFrom || !ticket.validUntil) return true;
     
     const now = new Date();
     const validFrom = ticket.validFrom.toDate ? ticket.validFrom.toDate() : new Date(ticket.validFrom);
@@ -36,16 +40,26 @@ export default function SingleTicket() {
     return now >= validFrom && now <= validUntil;
   };
 
+  // Check if ticket is upcoming (not yet valid)
+  const isTicketUpcoming = () => {
+    if (!ticket || !ticket.validFrom) return false;
+    
+    const now = new Date();
+    const validFrom = ticket.validFrom.toDate ? ticket.validFrom.toDate() : new Date(ticket.validFrom);
+    
+    return now < validFrom;
+  };
+
   // Get ticket status for visual representation
   const getTicketStatus = () => {
     if (!ticket) return 'unknown';
     
-    if (!ticket.valid) return 'used'; // Already validated/used
+    if (!ticket.valid) return 'used';
     
-    const isDateValid = isTicketDateValid();
-    if (!isDateValid) return 'expired'; // Outside valid date range
+    if (isTicketUpcoming()) return 'upcoming';
+    if (!isTicketDateValid()) return 'expired';
     
-    return 'valid'; // Valid and within date range
+    return 'valid';
   };
 
   // Get visual styling based on ticket status
@@ -60,6 +74,14 @@ export default function SingleTicket() {
           statusBadge: 'bg-green-500/90',
           statusText: 'Valido',
           borderColor: 'border-green-400/50'
+        };
+      case 'upcoming':
+        return {
+          qrBg: 'bg-blue-600',
+          qrColor: '#2563eb',
+          statusBadge: 'bg-blue-500/90',
+          statusText: 'In Arrivo',
+          borderColor: 'border-blue-400/50'
         };
       case 'expired':
         return {
@@ -88,39 +110,126 @@ export default function SingleTicket() {
     }
   };
 
+  // Confirmation Modal Component
+  const ConfirmationModal = () => {
+    if (!showConfirmModal) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-2xl max-w-md w-full p-6">
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-yellow-500/20 rounded-full flex items-center justify-center">
+              <AlertTriangle className="w-8 h-8 text-yellow-400" />
+            </div>
+            
+            <h3 className="text-xl font-bold text-white mb-2">Conferma Convalida</h3>
+            <p className="text-white/80 mb-6">
+              Sei sicuro di voler validare questo biglietto?<br />
+              <span className="text-sm text-white/60">Questa azione non può essere annullata.</span>
+            </p>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                disabled={validating}
+                className="flex-1 bg-white/10 hover:bg-white/20 text-white font-medium py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                <X className="w-4 h-4" />
+                Annulla
+              </button>
+              
+              <button
+                onClick={confirmValidation}
+                disabled={validating}
+                className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-green-600/50 text-white font-medium py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                {validating ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    Validazione...
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Conferma
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const handleValidate = async () => {
     if (!user || !user.isAdmin) {
-      alert('Solo gli amministratori possono validare i biglietti');
+      toast.error('Solo gli amministratori possono validare i biglietti', {
+        duration: 4000,
+        position: 'top-center',
+        style: {
+          background: '#EF4444',
+          color: '#fff',
+        },
+        icon: '🚫',
+      });
       return;
     }
 
     if (!ticket.valid) {
-      alert('Questo biglietto è già stato validato');
+      toast.error('Questo biglietto è già stato validato', {
+        duration: 4000,
+        position: 'top-center',
+        style: {
+          background: '#EF4444',
+          color: '#fff',
+        },
+        icon: '❌',
+      });
       return;
     }
 
-    // Check if ticket is within valid date range
-    if (!isTicketDateValid()) {
+    // Check if ticket is upcoming or expired
+    if (isTicketUpcoming()) {
       const validFrom = ticket.validFrom.toDate ? ticket.validFrom.toDate() : new Date(ticket.validFrom);
-      const validUntil = ticket.validUntil.toDate ? ticket.validUntil.toDate() : new Date(ticket.validUntil);
-      const now = new Date();
-      
-      let message = 'Questo biglietto non può essere validato: ';
-      if (now < validFrom) {
-        message += `non è ancora valido (valido dal ${formatDate(ticket.validFrom)})`;
-      } else if (now > validUntil) {
-        message += `è scaduto (scaduto il ${formatDate(ticket.validUntil)})`;
-      }
-      
-      alert(message);
+      toast.error(
+        `Biglietto non validabile: non è ancora valido (valido dal ${formatDate(ticket.validFrom)})`,
+        {
+          duration: 6000,
+          position: 'top-center',
+          style: {
+            background: '#F59E0B',
+            color: '#fff',
+          },
+          icon: '📅',
+        }
+      );
       return;
     }
 
-    // Show confirmation dialog
-    const confirmed = window.confirm('Sei sicuro di voler validare questo biglietto? Questa azione non può essere annullata.');
-    if (!confirmed) return;
+    if (!isTicketDateValid()) {
+      const validUntil = ticket.validUntil.toDate ? ticket.validUntil.toDate() : new Date(ticket.validUntil);
+      toast.error(
+        `Biglietto non validabile: è scaduto (scaduto il ${formatDate(ticket.validUntil)})`,
+        {
+          duration: 6000,
+          position: 'top-center',
+          style: {
+            background: '#F59E0B',
+            color: '#fff',
+          },
+          icon: '⏰',
+        }
+      );
+      return;
+    }
 
-    setLoading(true);
+    // Show confirmation modal instead of alert
+    setShowConfirmModal(true);
+  };
+
+  const confirmValidation = async () => {
+    setValidating(true);
 
     try {
       const idToken = await getUserIdToken();
@@ -143,15 +252,42 @@ export default function SingleTicket() {
           validatedAt: data.ticket.validatedAt
         }));
 
-        alert('Biglietto validato con successo!');
+        toast.success('Biglietto validato con successo! ✅', {
+          duration: 4000,
+          position: 'top-center',
+          style: {
+            background: '#10B981',
+            color: '#fff',
+            fontWeight: '500',
+          },
+          icon: '🎫',
+        });
+        
+        setShowConfirmModal(false);
       } else {
-        alert(`Errore: ${data.error}`);
+        toast.error(`Errore nella validazione: ${data.error}`, {
+          duration: 5000,
+          position: 'top-center',
+          style: {
+            background: '#EF4444',
+            color: '#fff',
+          },
+          icon: '❌',
+        });
       }
     } catch (error) {
       console.error('Error validating ticket:', error);
-      alert('Errore durante la validazione del biglietto');
+      toast.error('Errore durante la validazione del biglietto', {
+        duration: 5000,
+        position: 'top-center',
+        style: {
+          background: '#EF4444',
+          color: '#fff',
+        },
+        icon: '⚠️',
+      });
     } finally {
-      setLoading(false);
+      setValidating(false);
     }
   };
 
@@ -162,12 +298,13 @@ export default function SingleTicket() {
            ticket && 
            ticket.valid && 
            ticket.status !== 'validated' && 
-           isTicketDateValid(); // Added date validation
+           !isTicketUpcoming() && 
+           isTicketDateValid();
   };
 
    const fetchTicket = async () => {
     setLoading(true);
-    setError(''); // Reset error state on new fetch
+    setError('');
 
     try {
       const ticketDocRef = doc(db, 'tickets', ticketId);
@@ -176,24 +313,67 @@ export default function SingleTicket() {
       if (ticketDoc.exists()) {
         const ticketData = { id: ticketDoc.id, ...ticketDoc.data() };
 
-        // Client-side check: verify if the ticket belongs to the user or if the user is an admin.
         if (ticketData.userId !== user.uid && !user.isAdmin) {
-          // Set the specific error message for insufficient permissions.
           setError('Non puoi vedere questo biglietto');
+          toast.error('Accesso negato a questo biglietto', {
+            duration: 4000,
+            position: 'top-center',
+            style: {
+              background: '#EF4444',
+              color: '#fff',
+            },
+            icon: '🚫',
+          });
         } else {
           setTicket(ticketData);
+          // Show success toast when ticket loads successfully
+          toast.success('Biglietto caricato con successo', {
+            duration: 3000,
+            position: 'top-center',
+            style: {
+              background: '#10B981',
+              color: '#fff',
+            },
+            icon: '🎫',
+          });
         }
       } else {
         setError('Biglietto non trovato');
+        toast.error('Biglietto non trovato', {
+          duration: 4000,
+          position: 'top-center',
+          style: {
+            background: '#EF4444',
+            color: '#fff',
+          },
+          icon: '❌',
+        });
       }
     } catch (error) {
       console.error('Error fetching ticket:', error);
 
-      // Server-side check: Handle permission errors coming directly from Firestore.
       if (error.code === 'permission-denied') {
         setError('Non puoi vedere questo biglietto');
+        toast.error('Permessi insufficienti', {
+          duration: 4000,
+          position: 'top-center',
+          style: {
+            background: '#EF4444',
+            color: '#fff',
+          },
+          icon: '🚫',
+        });
       } else {
         setError('Errore nel caricamento del biglietto');
+        toast.error('Errore nel caricamento del biglietto', {
+          duration: 4000,
+          position: 'top-center',
+          style: {
+            background: '#EF4444',
+            color: '#fff',
+          },
+          icon: '⚠️',
+        });
       }
     } finally {
       setLoading(false);
@@ -294,6 +474,7 @@ export default function SingleTicket() {
             {/* Enhanced Status Badge */}
             <div className="absolute top-4 right-4 flex gap-2">
               <span className={`${styling.statusBadge} backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2`}>
+                {status === 'upcoming' && <Calendar className="w-4 h-4" />}
                 {status === 'expired' && <Clock className="w-4 h-4" />}
                 {status === 'used' && <AlertTriangle className="w-4 h-4" />}
                 {status === 'valid' && <TicketCheck className="w-4 h-4" />}
@@ -302,6 +483,12 @@ export default function SingleTicket() {
             </div>
 
             {/* Date validation warning for admins */}
+            {user.isAdmin && status === 'upcoming' && (
+              <div className="absolute top-16 right-4 bg-blue-500/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs">
+                Non ancora valido
+              </div>
+            )}
+
             {user.isAdmin && status === 'expired' && (
               <div className="absolute top-16 right-4 bg-orange-500/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs">
                 Fuori periodo validità
@@ -338,7 +525,10 @@ export default function SingleTicket() {
                   {ticket.validFrom && (
                     <div>
                       <label className="block text-sm font-medium text-white/80 mb-1">Valido Da</label>
-                      <p className={`text-white p-3 rounded-lg ${status === 'expired' ? 'bg-orange-500/20' : 'bg-white/10'}`}>
+                      <p className={`text-white p-3 rounded-lg ${
+                        status === 'upcoming' ? 'bg-blue-500/20' : 
+                        status === 'expired' ? 'bg-orange-500/20' : 'bg-white/10'
+                      }`}>
                         {formatDate(ticket.validFrom)}
                       </p>
                     </div>
@@ -347,7 +537,10 @@ export default function SingleTicket() {
                   {ticket.validUntil && (
                     <div>
                       <label className="block text-sm font-medium text-white/80 mb-1">Valido Fino</label>
-                      <p className={`text-white p-3 rounded-lg ${status === 'expired' ? 'bg-orange-500/20' : 'bg-white/10'}`}>
+                      <p className={`text-white p-3 rounded-lg ${
+                        status === 'upcoming' ? 'bg-blue-500/20' : 
+                        status === 'expired' ? 'bg-orange-500/20' : 'bg-white/10'
+                      }`}>
                         {formatDate(ticket.validUntil)}
                       </p>
                     </div>
@@ -388,15 +581,17 @@ export default function SingleTicket() {
                     includeMargin={true}
                   />
                   
-                  {/* Overlay for expired/used tickets */}
-                  {status !== 'valid' && status!== 'expired' && (
+                  {/* Overlay for non-valid tickets */}
+                  {status !== 'valid' && (
                     <div className="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center">
                       <div className="text-white text-center">
                         <div className="text-2xl font-bold mb-1">
-                          {status === 'expired' ? '⏰' : '❌'}
+                          {status === 'upcoming' ? '📅' : 
+                           status === 'expired' ? '⏰' : '❌'}
                         </div>
                         <div className="text-sm font-medium">
-                          {status === 'expired' ? 'SCADUTO' : 'UTILIZZATO'}
+                          {status === 'upcoming' ? 'IN ARRIVO' :
+                           status === 'expired' ? 'SCADUTO' : 'UTILIZZATO'}
                         </div>
                       </div>
                     </div>
@@ -410,14 +605,21 @@ export default function SingleTicket() {
                 {/* Status indicator text */}
                 <div className={`p-3 rounded-lg text-center mb-4 ${
                   status === 'valid' ? 'bg-green-500/20 text-green-300' :
+                  status === 'upcoming' ? 'bg-blue-500/20 text-blue-300' :
                   status === 'expired' ? 'bg-orange-500/20 text-orange-300' :
                   'bg-red-500/20 text-red-300'
                 }`}>
                   <p className="text-sm font-medium">
                     {status === 'valid' && '✅ Biglietto valido e utilizzabile'}
-                    {status === 'expired' && '⏰ Biglietto scaduto o non ancora valido'}
+                    {status === 'upcoming' && '📅 Biglietto non ancora valido'}
+                    {status === 'expired' && '⏰ Biglietto scaduto'}
                     {status === 'used' && '❌ Biglietto già utilizzato'}
                   </p>
+                  {status === 'upcoming' && ticket.validFrom && (
+                    <p className="text-xs mt-1 opacity-80">
+                      Diventerà valido il {formatDate(ticket.validFrom)}
+                    </p>
+                  )}
                 </div>
 
                 <div className="mt-2 p-4 bg-white/10 rounded-lg">
@@ -442,7 +644,8 @@ export default function SingleTicket() {
                 >
                   <TicketCheck className="w-5 h-5" />
                   <span>
-                    {!isTicketDateValid() && ticket.valid ? 'Non Validabile (Scaduto)' : 
+                    {isTicketUpcoming() && ticket.valid ? 'Non Validabile (Non Ancora Valido)' : 
+                     !isTicketDateValid() && ticket.valid ? 'Non Validabile (Scaduto)' : 
                      !ticket.valid ? 'Già Validato' : 'Convalida'}
                   </span>
                 </button>
@@ -452,7 +655,11 @@ export default function SingleTicket() {
         </div>
       </div>
       
-     
+      {/* Confirmation Modal */}
+      <ConfirmationModal />
+      
+      {/* Toast Container */}
+      <Toaster />
     </div>
   );
 }

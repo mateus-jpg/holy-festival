@@ -75,6 +75,7 @@ export default function Tickets() {
           borderColor: 'border-red-400/30',
           bgHover: 'hover:bg-red-500/10'
         };
+    
       default:
         return {
           badgeBg: 'bg-gray-500/80',
@@ -108,15 +109,6 @@ export default function Tickets() {
       });
 
         // Fetch ticket details for each unique ticketId
-        const ticketDetailsMap = {};
-        const ticketQuery = query(
-            collection(db, 'ticketDetails'),
-            where('id', 'in', Array.from(ticketReferences))
-        );
-        const ticketDetailsSnapshot = await getDocs(ticketQuery);
-        ticketDetailsSnapshot.forEach((doc) => {
-            ticketDetailsMap[doc.id] = doc.data();
-        });
 
         // Merge ticket details into ticketsData
 
@@ -435,59 +427,7 @@ export default function Tickets() {
         )}
 
         {/* Summary Statistics */}
-        {tickets.length > 0 && (
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div className="backdrop-blur-md bg-white/10 rounded-2xl p-6 border border-white/20">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-white/80 text-sm">Totali</p>
-                  <p className="text-2xl font-bold text-white">{counts.all}</p>
-                </div>
-                <Filter className="w-8 h-8 text-white/60" />
-              </div>
-            </div>
-            
-            <div className="backdrop-blur-md bg-green-500/10 rounded-2xl p-6 border border-green-400/30">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-green-300 text-sm">Validi</p>
-                  <p className="text-2xl font-bold text-green-300">{counts.valid}</p>
-                </div>
-                <CheckCircle className="w-8 h-8 text-green-400" />
-              </div>
-            </div>
-            
-            <div className="backdrop-blur-md bg-blue-500/10 rounded-2xl p-6 border border-blue-400/30">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-blue-300 text-sm">In Arrivo</p>
-                  <p className="text-2xl font-bold text-blue-300">{counts.upcoming}</p>
-                </div>
-                <CalendarUpcoming className="w-8 h-8 text-blue-400" />
-              </div>
-            </div>
-            
-            <div className="backdrop-blur-md bg-orange-500/10 rounded-2xl p-6 border border-orange-400/30">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-orange-300 text-sm">Scaduti</p>
-                  <p className="text-2xl font-bold text-orange-300">{counts.expired}</p>
-                </div>
-                <Clock className="w-8 h-8 text-orange-400" />
-              </div>
-            </div>
-            
-            <div className="backdrop-blur-md bg-red-500/10 rounded-2xl p-6 border border-red-400/30">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-red-300 text-sm">Utilizzati</p>
-                  <p className="text-2xl font-bold text-red-300">{counts.used}</p>
-                </div>
-                <XCircle className="w-8 h-8 text-red-400" />
-              </div>
-            </div>
-          </div>
-        )}
+
       </div>
       
       <style jsx>{`

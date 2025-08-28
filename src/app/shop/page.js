@@ -69,8 +69,6 @@ export default function Products() {
   };
 
   const addToCart = (product) => {
-    console.log('Adding to cart:', product);
-
     const existingItem = cart.find(item => item.id === product.id);
     let updatedCart;
 
@@ -90,7 +88,7 @@ export default function Products() {
     // Sostituisci l'alert con un toast
     toast.success(`${product.name} aggiunto al carrello!`, {
       duration: 3000,
-      position: 'bottom-center',
+      position: 'TOP-center',
       // Stile personalizzato
       style: {
         background: '#10B981',
