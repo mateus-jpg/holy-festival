@@ -11,8 +11,8 @@ import Image from 'next/image';
 const Logo = () => (
   <Link href="/" className="flex items-center space-x-2 text-2xl font-bold text-gray-200 hover:text-white transition-colors">
     {/* <Code className="h-8 w-8 text-indigo-600 dark:text-indigo-500" /> */}
-    <Image src="/logo.png" alt="Holy Festival Logo" width={40} height={40} />
-    <h1 className='font-cuanky pt-2'>Holy Festival</h1>
+    <Image src="/logo.png" alt="Holy Festival Logo" width={64} height={64} />
+    <h1 className='font-cuanky pt-2 pl-2'>Holy Festival</h1>
   </Link>
 );
 
