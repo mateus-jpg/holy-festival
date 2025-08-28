@@ -4,8 +4,11 @@ node_modules/*
 
 
 .env.*
+.DS_Store
 
 *.log
 
 secret.*
 holy-festival-2025-firebase-adminsdk-fbsvc-e8b3b63334.json
+
+.dev-folder/*

@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import localFont from 'next/font/local'
 import { AuthProvider } from '@/app/contexts/AuthContext';
 import Navbar from "@/app/components/NavBar";
 const geistSans = Geist({
@@ -7,6 +8,12 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
+const cuankyFont = localFont({
+  src: './fonts/Cuanky.woff2',
+  display: 'swap',
+    variable: '--cuankyFont',
+})
+ 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
@@ -21,7 +28,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${cuankyFont.className} antialiased`}
       >
         <AuthProvider>
             <Navbar/>

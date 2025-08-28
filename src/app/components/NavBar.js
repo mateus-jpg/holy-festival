@@ -6,11 +6,13 @@ import { Menu, X, Code, LogIn, ShoppingCart } from 'lucide-react';
 import { LogOut } from 'lucide-react';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 // You can create a simple Logo component or just use text/image
 const Logo = () => (
   <Link href="/" className="flex items-center space-x-2 text-2xl font-bold text-gray-200 hover:text-white transition-colors">
     {/* <Code className="h-8 w-8 text-indigo-600 dark:text-indigo-500" /> */}
-    <span>Holy Festival</span>
+    <Image src="/logo.png" alt="Holy Festival Logo" width={40} height={40} />
+    <h1 className='font-cuanky pt-2'>Holy Festival</h1>
   </Link>
 );
 

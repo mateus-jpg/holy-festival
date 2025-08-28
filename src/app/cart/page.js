@@ -117,10 +117,10 @@ export default function Cart() {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="flex justify-between items-center h-16">
-                    <h1 className="text-3xl font-bold mb-8">Carrello</h1>
+                    <h1 className=" font-cuanky text-3xl font-bold mb-8">Carrello</h1>
                     <Link
                         href="/shop"
-                        className="text-sm hover:underline hover:underline-offset-4 mb-8"
+                        className=" text-sm hover:underline hover:underline-offset-4 mb-8"
                     >
                         Continua lo Shopping
                     </Link>

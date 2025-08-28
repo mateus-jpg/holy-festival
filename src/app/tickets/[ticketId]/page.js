@@ -582,7 +582,7 @@ export default function SingleTicket() {
                   />
                   
                   {/* Overlay for non-valid tickets */}
-                  {status !== 'valid' && (
+                  {status !== 'valid' || status!== 'upcoming' && (
                     <div className="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center">
                       <div className="text-white text-center">
                         <div className="text-2xl font-bold mb-1">
