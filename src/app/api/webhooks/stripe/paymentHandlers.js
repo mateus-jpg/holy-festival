@@ -67,17 +67,17 @@ export async function handlePaymentIntentSucceeded(paymentIntent) {
                 livemode: paymentIntent.livemode
             }
         };
-        console.log("OrderData:", orderData)
+        //console.log("OrderData:", orderData)
         // Store order in single orders collection
         try {
-            console.log("Saving sucessfull order")
+            
             const orderRef = db.collection('orders').doc(paymentIntent.id);
 
             await orderRef.set(orderData);
            
             
         } catch (error) {
-            console.log("Erro on saving sucessfull order:", error)
+            console.error("Error on saving successful order:", error)
             throw error
         }
 
@@ -327,7 +327,7 @@ async function createUserProducts(orderId, userId, orderItems) {
 
             // Handle ticket products - create one user product per quantity
             const productsRefs = await Promise.all(product.products.map(ref => ref.get()));
-            console.log("Successfully getting all productRef from shopItems");
+           
             
             for (let i = 0; i < item.quantity; i++) {
                 //if (product.type === 'single_ticket') {
@@ -352,6 +352,7 @@ async function createTicketUserProduct(batch, orderId, userId, product, products
     let subsequence = 0;
     
     for (const productDoc of productsRefs) {
+        const uniqueString = Math.random().toString(36).substring(2, 8).toUpperCase();
         const productData = productDoc.data();
         const orderSlice = orderId.slice(-6).toUpperCase();
         const userProductId = `USRPRD-${orderSlice}-${productDoc.id}-${dateString}${sequence}`;
@@ -361,7 +362,7 @@ async function createTicketUserProduct(batch, orderId, userId, product, products
         console.log("Product Data", productData);
         
         if (productData.category === "ticket") {
-            const ticketNumber = `TCKT-${orderSlice}${userId}${dateString}${sequence}${subsequence}`;
+            const ticketNumber = `TCKT-${orderSlice}${userId.slice(0,4)}${dateString}${sequence}${subsequence}-${uniqueString}`;
             const ticketRef = db.collection('tickets').doc(ticketNumber);
             
             
@@ -383,7 +384,7 @@ async function createTicketUserProduct(batch, orderId, userId, product, products
                 category: productData.category
             });
             
-            console.log("Saving user Product on ref", productRef);
+            console.log("Saving user Product on ref", ticketNumber);
             
             // Create user product document for ticket
             batch.set(productRef, {
@@ -400,7 +401,7 @@ async function createTicketUserProduct(batch, orderId, userId, product, products
                 category: productData.category // Fixed reference
             });
         } else {
-            console.log("Saving user Product on ref", productRef);
+            console.log("Saving user as not Ticket Product on ref", productRef);
             
             // Create user product document for non-ticket
             batch.set(productRef, {
@@ -421,30 +422,6 @@ async function createTicketUserProduct(batch, orderId, userId, product, products
 
 
 
-
-function generateTicketNumber(ticketId, eventDate, suffix = '') {
-    const eventCode = eventId.toUpperCase().slice(0, 6);
-    const dateStr = new Date(eventDate).toISOString().slice(0, 10).replace(/-/g, '');
-    const ticketSeq = ticketId.slice(-6).toUpperCase();
-    const suffixStr = suffix ? `-${suffix}` : '';
-
-    return `${eventCode}-${ticketSeq}-${dateStr}${suffixStr}`;
-}
-function generateQRCodeData(ticketId, userId, eventDate, ticketLevel) {
-    const components = [
-        eventId.toUpperCase(),
-        ticketId,
-        userId.slice(-8),
-        new Date(eventDate).toISOString().slice(0, 10).replace(/-/g, ''),
-        ticketLevel
-    ];
-
-    if (packageType) {
-        components.push(packageType);
-    }
-
-    return components.join('|');
-}
 
 function generateValidationSecret() {
     const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
