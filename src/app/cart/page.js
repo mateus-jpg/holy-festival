@@ -217,10 +217,6 @@ export default function Cart() {
                                         <span>{getSubtotalAll().toFixed(2)}€</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span>Tasse</span>
-                                        <span>{getTax().toFixed(2)}€</span>
-                                    </div>
-                                    <div className="flex justify-between">
                                         <span>Commissioni</span>
                                         <span>{getFees().toFixed(2)}€</span>
                                     </div>

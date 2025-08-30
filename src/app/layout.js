@@ -13,7 +13,12 @@ const cuankyFont = localFont({
   display: 'swap',
     variable: '--cuankyFont',
 })
- 
+
+const promptRegular = localFont({
+  src: './fonts/Prompt-Regular.woff2',
+  display: 'swap',
+  variable: '--promptRegular',
+})
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
@@ -28,7 +33,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${cuankyFont.className} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${cuankyFont.variable} ${promptRegular.className} antialiased`}
       >
         <AuthProvider>
             <Navbar/>

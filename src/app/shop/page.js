@@ -120,7 +120,7 @@ export default function Products() {
         {/* Category Filter */}
 
         <div className="flex justify-between items-center h-16">
-          <h1 className="text-3xl font-bold mb-8">Shop</h1>
+          <h1 className="text-3xl font-cuanky font-bold mb-8">Shop</h1>
         </div>
 
         {/* Products Grid */}

@@ -119,7 +119,7 @@ export default function ProfilePage() {
                 <div className="bg-black/30 backdrop-blur-lg p-8 rounded-2xl shadow-lg border border-white/10">
                     <div className="text-center mb-8">
                         <User className="w-16 h-16 mx-auto text-blue-500 mb-4" />
-                        <h2 className="text-2xl font-bold mb-2">
+                        <h2 className="text-2xl  font-bold mb-2">
                             {isComplete ? 'Profilo Completo' : 'Completa il tuo Profilo'}
                         </h2>
                         <p className="text-gray-300">
