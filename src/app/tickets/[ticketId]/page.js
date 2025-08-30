@@ -165,7 +165,7 @@ export default function SingleTicket() {
   const handleValidate = async () => {
     if (!user || !user.isAdmin) {
       toast.error('Solo gli amministratori possono validare i biglietti', {
-        duration: 4000,
+        duration: 2000,
         position: 'top-center',
         style: {
           background: '#EF4444',
@@ -178,7 +178,7 @@ export default function SingleTicket() {
 
     if (!ticket.valid) {
       toast.error('Questo biglietto è già stato validato', {
-        duration: 4000,
+        duration: 2000,
         position: 'top-center',
         style: {
           background: '#EF4444',
@@ -195,7 +195,7 @@ export default function SingleTicket() {
       toast.error(
         `Biglietto non validabile: non è ancora valido (valido dal ${formatDate(ticket.validFrom)})`,
         {
-          duration: 6000,
+          duration: 4000,
           position: 'top-center',
           style: {
             background: '#F59E0B',
@@ -212,7 +212,7 @@ export default function SingleTicket() {
       toast.error(
         `Biglietto non validabile: è scaduto (scaduto il ${formatDate(ticket.validUntil)})`,
         {
-          duration: 6000,
+          duration: 4000,
           position: 'top-center',
           style: {
             background: '#F59E0B',
@@ -582,7 +582,7 @@ export default function SingleTicket() {
                   />
                   
                   {/* Overlay for non-valid tickets */}
-                  {status !== 'valid' || status!== 'upcoming' && (
+                  {(status == 'expired' || status == 'used') && (
                     <div className="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center">
                       <div className="text-white text-center">
                         <div className="text-2xl font-bold mb-1">

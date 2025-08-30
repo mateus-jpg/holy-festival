@@ -87,8 +87,8 @@ export default function Products() {
 
     // Sostituisci l'alert con un toast
     toast.success(`${product.name} aggiunto al carrello!`, {
-      duration: 3000,
-      position: 'TOP-center',
+      duration: 2000,
+      position: 'top-center',
       // Stile personalizzato
       style: {
         background: '#10B981',
