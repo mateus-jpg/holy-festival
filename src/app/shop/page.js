@@ -35,15 +35,19 @@ export default function Products() {
     try {
       const q = query(
         collection(db, 'shop'),
-        where("isActive", "==", true),
+        where("isActive", "==", true)
+        
       );
       const querySnapshot = await getDocs(q);
       const productsData = [];
 
       querySnapshot.forEach((doc) => {
-        console.log(doc)
+
         const product = { id: doc.id, ...doc.data() };
-        productsData.push(product);
+        if (product.soldCount<= product.totalStock){
+
+            productsData.push(product);
+        }
       });
 
       setProducts(productsData);
