@@ -38,8 +38,6 @@ export default function Navbar() {
     router.push('/auth');
   };
 
-  console.log(user)
-
   return (
     // The main nav element with glassmorphism styling
     // - `fixed`: Keeps the navbar at the top

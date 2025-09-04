@@ -65,7 +65,8 @@ export default function ProfilePage() {
 
         try {
             await updateUserProfile({
-                ...validation.data
+                ...validation.data,
+                isComplete: isComplete
             });
             setIsComplete(true);
         } catch (err) {

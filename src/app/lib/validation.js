@@ -16,9 +16,7 @@ export const customerSchema = z.object({
 export const profileSchema = z.object({
   name: z.string().min(2, 'Il nome è richiesto'),
   surname: z.string().min(2, 'Il cognome è richiesto'),
-  codiceFiscale: z.string().length(16, {
-    message: 'Codice fiscale non valido',
-  }),
+  
 });
 export const cartItemSchema = z.object({
   id: z.string().min(1),

@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { set } from 'zod';
 // Importa react-hot-toast
 import toast, { Toaster } from 'react-hot-toast';
+import ShopFabButton from '../components/ShopFabButton';
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -115,7 +116,7 @@ export default function Products() {
   return (
     <div className="h-100% bg-background text-foreground">
       {/* Header */}
-      
+      <ShopFabButton />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {/* Category Filter */}
 

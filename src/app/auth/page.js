@@ -41,7 +41,11 @@ export default function AuthPage() {
     // Redirect if user is already logged in
     useEffect(() => {
         if (!authLoading && user) {
-            router.push('/profile');
+            if (!user.isComplete) {
+                router.push('/profile');
+            } else {
+                router.push('/shop');
+            }
         }
     }, [user, authLoading, router]);
 
