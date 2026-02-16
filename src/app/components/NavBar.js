@@ -29,6 +29,11 @@ export default function Navbar() {
     { href: '/tickets', label: 'I tuoi Tickets' },
   ];
 
+  const publicLinks = [
+    { href: '/info', label: 'Il Festival' },
+    { href: '/faq', label: 'FAQ' },
+  ];
+
 
   const handleLogin = async () => {
     router.push('/auth')
@@ -57,21 +62,28 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Menu */}
-          {user && <div className="hidden md:block">
+          <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-4">
-              {navLinks.map((link) => (
+              {publicLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  // Added dark mode classes for link styling
                   className=" text-gray-300 hover:bg-white/10 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-all duration-300"
                 >
                   {link.label}
                 </Link>
               ))}
-
+              {user && navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className=" text-gray-300 hover:bg-white/10 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-all duration-300"
+                >
+                  {link.label}
+                </Link>
+              ))}
             </div>
-          </div>}
+          </div>
 
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-4">
@@ -113,13 +125,22 @@ export default function Navbar() {
       {isOpen && (
         <div className="md:hidden" id="mobile-menu">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            {publicLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className=" text-gray-300 hover:bg-white/10 hover:text-white block px-3 py-2 rounded-md text-base font-medium transition-all duration-300"
+                onClick={() => setIsOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
             {user && navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                // Added dark mode classes for mobile links
                 className=" text-gray-300 hover:bg-white/10 hover:text-white block px-3 py-2 rounded-md text-base font-medium transition-all duration-300"
-                onClick={() => setIsOpen(false)} // Close menu on click
+                onClick={() => setIsOpen(false)}
               >
                 {link.label}
               </Link>
