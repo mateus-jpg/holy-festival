@@ -27,27 +27,55 @@ function extractTicketId(value) {
   return trimmedValue.split(/[?#]/)[0].replace(/\/$/, '');
 }
 
+function getCameraErrorMessage(error) {
+  if (error?.name === 'NotAllowedError' || error?.name === 'PermissionDeniedError') {
+    return 'Permesso fotocamera negato. Abilita la fotocamera nelle impostazioni del browser e riprova.';
+  }
+
+  if (error?.name === 'NotFoundError' || error?.name === 'DevicesNotFoundError') {
+    return 'Nessuna fotocamera trovata su questo dispositivo.';
+  }
+
+  if (error?.name === 'NotReadableError' || error?.name === 'TrackStartError') {
+    return 'La fotocamera è già in uso da un’altra app o scheda.';
+  }
+
+  if (error?.name === 'OverconstrainedError') {
+    return 'La fotocamera posteriore non è disponibile. Riprova o usa il campo manuale.';
+  }
+
+  return error?.message || 'Impossibile avviare la fotocamera.';
+}
+
+async function getCameraPermissionState() {
+  if (!navigator.permissions?.query) {
+    return 'unknown';
+  }
+
+  try {
+    const permission = await navigator.permissions.query({ name: 'camera' });
+    return permission.state;
+  } catch {
+    return 'unknown';
+  }
+}
+
 export default function ValidateTicketsPage() {
   const { user, loading: authLoading, getUserIdToken } = useAuth();
   const videoRef = useRef(null);
-  const streamRef = useRef(null);
-  const frameRef = useRef(null);
+  const controlsRef = useRef(null);
   const validatingRef = useRef(false);
   const [rawValue, setRawValue] = useState('');
   const [scanning, setScanning] = useState(false);
+  const [cameraStatus, setCameraStatus] = useState('idle');
   const [validating, setValidating] = useState(false);
   const [cameraError, setCameraError] = useState('');
   const [result, setResult] = useState(null);
 
   const stopScanner = useCallback(() => {
-    if (frameRef.current) {
-      window.cancelAnimationFrame(frameRef.current);
-      frameRef.current = null;
-    }
-
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
+    if (controlsRef.current) {
+      controlsRef.current.stop();
+      controlsRef.current = null;
     }
 
     if (videoRef.current) {
@@ -55,6 +83,7 @@ export default function ValidateTicketsPage() {
     }
 
     setScanning(false);
+    setCameraStatus('idle');
   }, []);
 
   useEffect(() => stopScanner, [stopScanner]);
@@ -114,52 +143,68 @@ export default function ValidateTicketsPage() {
   const startScanner = async () => {
     setCameraError('');
     setResult(null);
+    setCameraStatus('requesting');
 
-    if (!('BarcodeDetector' in window)) {
-      setCameraError('Scanner fotocamera non supportato da questo browser. Usa il campo manuale.');
+    if (!window.isSecureContext) {
+      setCameraStatus('idle');
+      setCameraError('La fotocamera funziona solo su HTTPS o localhost. Apri questa pagina da un URL sicuro.');
+      return;
+    }
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraStatus('idle');
+      setCameraError('Questo browser non espone l’accesso alla fotocamera. Usa il campo manuale.');
+      return;
+    }
+
+    if (!videoRef.current) {
+      setCameraStatus('idle');
+      setCameraError('Anteprima video non pronta. Ricarica la pagina e riprova.');
       return;
     }
 
     try {
-      const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
-      const stream = await navigator.mediaDevices.getUserMedia({
+      const permissionState = await getCameraPermissionState();
+      if (permissionState === 'denied') {
+        setCameraStatus('idle');
+        setCameraError('Permesso fotocamera bloccato. Riabilitalo dalle impostazioni del browser.');
+        return;
+      }
+
+      const { BrowserQRCodeReader } = await import('@zxing/browser');
+      const reader = new BrowserQRCodeReader();
+      const constraints = {
+        audio: false,
         video: {
           facingMode: { ideal: 'environment' },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
         },
-        audio: false,
-      });
-
-      streamRef.current = stream;
-      videoRef.current.srcObject = stream;
-      await videoRef.current.play();
-      setScanning(true);
-
-      const scanFrame = async () => {
-        if (!videoRef.current || !streamRef.current) {
-          return;
-        }
-
-        try {
-          if (videoRef.current.readyState >= 2 && !validatingRef.current) {
-            const codes = await detector.detect(videoRef.current);
-            const rawCode = codes?.[0]?.rawValue;
-            if (rawCode) {
-              stopScanner();
-              await validateTicket(rawCode);
-              return;
-            }
-          }
-        } catch (error) {
-          setCameraError(error.message || 'Lettura QR non riuscita');
-        }
-
-        frameRef.current = window.requestAnimationFrame(scanFrame);
       };
 
-      frameRef.current = window.requestAnimationFrame(scanFrame);
+      const controls = await reader.decodeFromConstraints(
+        constraints,
+        videoRef.current,
+        async (scanResult, _scanError, scanControls) => {
+          const rawCode = scanResult?.getText?.();
+          if (!rawCode || validatingRef.current) {
+            return;
+          }
+
+          scanControls.stop();
+          controlsRef.current = null;
+          setScanning(false);
+          setCameraStatus('idle');
+          await validateTicket(rawCode);
+        }
+      );
+
+      controlsRef.current = controls;
+      setScanning(true);
+      setCameraStatus('active');
     } catch (error) {
       stopScanner();
-      setCameraError(error.message || 'Impossibile avviare la fotocamera');
+      setCameraError(getCameraErrorMessage(error));
     }
   };
 
@@ -229,7 +274,14 @@ export default function ValidateTicketsPage() {
             />
             {!scanning && (
               <div className="absolute inset-0 flex items-center justify-center bg-[#012136] text-white/70">
-                <QrCode className="h-16 w-16" />
+                {cameraStatus === 'requesting' ? (
+                  <div className="flex flex-col items-center gap-3 text-white">
+                    <Loader2 className="h-12 w-12 animate-spin" />
+                    <span className="text-sm font-semibold">Richiesta permesso fotocamera...</span>
+                  </div>
+                ) : (
+                  <QrCode className="h-16 w-16" />
+                )}
               </div>
             )}
             {scanning && (
@@ -244,11 +296,11 @@ export default function ValidateTicketsPage() {
               <button
                 type="button"
                 onClick={startScanner}
-                disabled={validating}
+                disabled={validating || cameraStatus === 'requesting'}
                 className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-[#012136] px-6 py-3 font-bold text-white transition-colors hover:bg-[#0a6f6a] disabled:bg-[#012136]/35"
               >
-                <Camera className="h-5 w-5" />
-                Avvia scanner
+                {cameraStatus === 'requesting' ? <Loader2 className="h-5 w-5 animate-spin" /> : <Camera className="h-5 w-5" />}
+                {cameraStatus === 'requesting' ? 'Consenti fotocamera' : 'Avvia scanner'}
               </button>
             ) : (
               <button
