@@ -104,6 +104,8 @@ async function createTicketUserProduct(
         userId,
         orderId,
         name: productData.name,
+        description: productData.description || null,
+        price: Number.isFinite(Number(productData.price)) ? Number(productData.price) : null,
         userProductIdRef: userProductId,
         status: 'active',
         validationSecret,
@@ -114,6 +116,7 @@ async function createTicketUserProduct(
         validFrom: productData.validFrom,
         validUntil: productData.validUntil,
         eventId: productData.eventId,
+        location: productData.location || null,
         category: productData.category,
       });
 
@@ -126,9 +129,13 @@ async function createTicketUserProduct(
         valid: true,
         ticketNumberRef: ticketNumber,
         productIdRef: productDoc.id,
+        name: productData.name,
+        description: productData.description || null,
+        price: Number.isFinite(Number(productData.price)) ? Number(productData.price) : null,
         validFrom: productData.validFrom,
         validUntil: productData.validUntil,
         eventId: productData.eventId,
+        location: productData.location || null,
         category: productData.category,
       });
 

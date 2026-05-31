@@ -25,13 +25,13 @@ function getRequestIp(request) {
 
 function getAvailableStock(product) {
     const availableStock = Number(product.availableStock);
-    if (Number.isFinite(availableStock)) {
+    if (product.availableStock !== null && product.availableStock !== undefined && product.availableStock !== '' && Number.isFinite(availableStock)) {
         return availableStock;
     }
 
     const totalStock = Number(product.totalStock);
     const soldCount = Number(product.soldCount || 0);
-    if (Number.isFinite(totalStock)) {
+    if (product.totalStock !== null && product.totalStock !== undefined && product.totalStock !== '' && Number.isFinite(totalStock)) {
         return Math.max(totalStock - soldCount, 0);
     }
 

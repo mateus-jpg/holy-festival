@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { LogIn, LogOut, Menu, QrCode, ShoppingCart, Ticket, TicketPlus, User, X } from 'lucide-react';
+import { ClipboardList, LogIn, LogOut, Menu, QrCode, ShoppingCart, Ticket, TicketPlus, User, X } from 'lucide-react';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { eventContent } from '@/app/lib/eventContent';
 
@@ -20,6 +20,7 @@ const privateLinks = [
 ];
 
 const adminLinks = [
+  { href: '/admin/manage-tickets', label: 'Gestisci', icon: ClipboardList },
   { href: '/admin/generate-tickets', label: 'Genera', icon: TicketPlus },
   { href: '/admin/validate', label: 'Valida QR', icon: QrCode },
 ];

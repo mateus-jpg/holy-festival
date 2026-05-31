@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { QrCode, TicketPlus } from 'lucide-react';
+import { ClipboardList, QrCode, TicketPlus } from 'lucide-react';
 import { useAuth } from '@/app/contexts/AuthContext';
 
 export default function AdminHome() {
@@ -43,7 +43,16 @@ export default function AdminHome() {
         <h1 className="text-4xl font-black text-[#012136]">Pannello biglietti</h1>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
+        <Link
+          href="/admin/manage-tickets"
+          className="rounded-lg border border-[#012136]/12 bg-white p-6 shadow-sm transition-shadow hover:shadow-lg"
+        >
+          <ClipboardList className="mb-5 h-10 w-10 text-[#012136]" />
+          <h2 className="text-2xl font-black text-[#012136]">Gestisci shop</h2>
+          <p className="mt-3 text-[#012136]/68">Crea, modifica o rimuovi biglietti acquistabili.</p>
+        </Link>
+
         <Link
           href="/admin/generate-tickets"
           className="rounded-lg border border-[#012136]/12 bg-white p-6 shadow-sm transition-shadow hover:shadow-lg"
