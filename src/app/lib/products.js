@@ -1,22 +1,30 @@
-import admin from 'firebase-admin';
+import 'server-only';
 
-function getAdminDb() {
-  if (!admin.apps.length) {
-    admin.initializeApp({
-      credential: admin.credential.applicationDefault(),
-    });
-  }
+import { getAdminDb } from '@/app/lib/firebase-admin';
 
-  return admin.firestore();
-}
-
-export async function getProductPrice(productId) {
+export async function getProduct(productId) {
   const productRef = getAdminDb().collection('shop').doc(productId);
   const productSnap = await productRef.get();
 
   if (!productSnap.exists) {
-    throw new Error('Product not found');
+    const error = new Error('Product not found');
+    error.status = 404;
+    throw error;
   }
 
-  return productSnap.data().price;
+  return {
+    id: productSnap.id,
+    ref: productRef,
+    ...productSnap.data(),
+  };
+}
+
+export async function getProductPrice(productId) {
+  const product = await getProduct(productId);
+
+  if (!Number.isFinite(Number(product.price))) {
+    throw new Error('Product price is invalid');
+  }
+
+  return Number(product.price);
 }

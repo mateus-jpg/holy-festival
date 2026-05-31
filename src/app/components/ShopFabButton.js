@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { ShoppingCart } from "lucide-react";
 import { useEffect, useState } from "react";
+import { getCartItemCount, readCart } from "@/app/utils/cart";
 export default function ShopFabButton() {
     const router = useRouter();
     const [numberOfItems, setNumberOfItems] = useState(0);
@@ -25,14 +26,7 @@ export default function ShopFabButton() {
     };
 
     const loadCartCount = () => {
-        const savedCart = localStorage.getItem('cart');
-        if (savedCart) {
-            const parsedCart = JSON.parse(savedCart);
-            const itemCount = parsedCart.reduce((total, item) => total + (item.quantity || 1), 0);
-            setNumberOfItems(itemCount);
-        } else {
-            setNumberOfItems(0);
-        }
+        setNumberOfItems(getCartItemCount(readCart()));
     };
 
     return (

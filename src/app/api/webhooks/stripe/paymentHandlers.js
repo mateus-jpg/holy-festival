@@ -1,18 +1,13 @@
-import admin from 'firebase-admin';
+import { admin, getAdminDb } from '@/app/lib/firebase-admin';
+import { createUserProducts, updateProductInventory } from '@/app/lib/ticket-fulfillment';
 
-
-// Initialize Firebase Admin SDK
-if (!admin.apps.length) {
-    admin.initializeApp({
-        credential: admin.credential.applicationDefault(),
-    });
-}
-
-const db = admin.firestore();
+const FULFILLMENT_RETRY_AFTER_MS = 5 * 60 * 1000;
 
 export async function handlePaymentIntentSucceeded(paymentIntent) {
     try {
         console.log('Processing successful payment:', paymentIntent.id);
+        const db = getAdminDb();
+        const now = admin.firestore.Timestamp.now();
 
         // Extract metadata
         const { userId, orderItems, itemCount } = paymentIntent.metadata;
@@ -52,8 +47,8 @@ export async function handlePaymentIntentSucceeded(paymentIntent) {
 
             // Timestamps
             createdAt: admin.firestore.Timestamp.fromMillis(paymentIntent.created * 1000),
-            updatedAt: admin.firestore.Timestamp.now(),
-            completedAt: admin.firestore.Timestamp.now(),
+            updatedAt: now,
+            completedAt: now,
 
             // Payment method info
             paymentMethodId: paymentIntent.payment_method,
@@ -67,27 +62,63 @@ export async function handlePaymentIntentSucceeded(paymentIntent) {
                 livemode: paymentIntent.livemode
             }
         };
-        //console.log("OrderData:", orderData)
-        // Store order in single orders collection
-        try {
-            
-            const orderRef = db.collection('orders').doc(paymentIntent.id);
 
-            await orderRef.set(orderData);
-           
-            
-        } catch (error) {
-            console.error("Error on saving successful order:", error)
-            throw error
-        }
+        const orderRef = db.collection('orders').doc(paymentIntent.id);
+        let shouldFulfill = false;
 
+        await db.runTransaction(async (transaction) => {
+            const existingOrder = await transaction.get(orderRef);
+            const existingData = existingOrder.exists ? existingOrder.data() : {};
+            const fulfillmentStatus = existingData.fulfillmentStatus;
+            const processingAt = existingData.fulfillmentProcessingAt?.toMillis?.() || 0;
+            const processingIsStale =
+                fulfillmentStatus === 'processing' &&
+                Date.now() - processingAt > FULFILLMENT_RETRY_AFTER_MS;
 
+            shouldFulfill =
+                fulfillmentStatus !== 'fulfilled' &&
+                (fulfillmentStatus !== 'processing' || processingIsStale);
 
+            transaction.set(
+                orderRef,
+                {
+                    ...orderData,
+                    fulfillmentStatus: shouldFulfill ? 'processing' : fulfillmentStatus || 'fulfilled',
+                    fulfillmentProcessingAt: shouldFulfill ? now : existingData.fulfillmentProcessingAt || now,
+                },
+                { merge: true }
+            );
+        });
 
         console.log(`Order ${paymentIntent.id} successfully stored with status 'completed' for user ${userId}`);
-        await createUserProducts(paymentIntent.id, userId, parsedItems);
-        // Optional: Update product inventory
-        await updateProductInventory(parsedItems);
+
+        if (!shouldFulfill) {
+            console.log(`Order ${paymentIntent.id} was already fulfilled or is currently being fulfilled`);
+            return;
+        }
+
+        try {
+            await createUserProducts(paymentIntent.id, userId, parsedItems);
+            await updateProductInventory(parsedItems);
+            await orderRef.set(
+                {
+                    fulfillmentStatus: 'fulfilled',
+                    fulfilledAt: admin.firestore.Timestamp.now(),
+                    updatedAt: admin.firestore.Timestamp.now(),
+                },
+                { merge: true }
+            );
+        } catch (error) {
+            await orderRef.set(
+                {
+                    fulfillmentStatus: 'failed',
+                    fulfillmentError: error.message,
+                    updatedAt: admin.firestore.Timestamp.now(),
+                },
+                { merge: true }
+            );
+            throw error;
+        }
 
     } catch (error) {
         console.error('Error handling successful payment:', error);
@@ -99,6 +130,7 @@ export async function handlePaymentIntentSucceeded(paymentIntent) {
 export async function handlePaymentIntentFailed(paymentIntent) {
     try {
         console.log('Processing failed payment:', paymentIntent.id);
+        const db = getAdminDb();
 
         const { userId, orderItems, itemCount } = paymentIntent.metadata;
 
@@ -143,7 +175,7 @@ export async function handlePaymentIntentFailed(paymentIntent) {
 
         // Store in same orders collection
         const orderRef = db.collection('orders').doc(paymentIntent.id);
-        await orderRef.set(failedOrderData);
+        await orderRef.set(failedOrderData, { merge: true });
 
         console.log(`Failed payment ${paymentIntent.id} stored with status 'failed' for user ${userId}`);
 
@@ -155,6 +187,7 @@ export async function handlePaymentIntentFailed(paymentIntent) {
 export async function handlePaymentIntentRequiresAction(paymentIntent) {
     try {
         console.log('Processing payment that requires action:', paymentIntent.id);
+        const db = getAdminDb();
 
         const { userId, orderItems, itemCount } = paymentIntent.metadata;
 
@@ -242,6 +275,7 @@ export async function handlePaymentIntentRequiresAction(paymentIntent) {
 
 async function storeFailedOrder(paymentIntent, processStatus, errorMessage) {
     try {
+        const db = getAdminDb();
         const { userId, orderItems, itemCount } = paymentIntent.metadata;
 
         let parsedItems = [];
@@ -271,163 +305,10 @@ async function storeFailedOrder(paymentIntent, processStatus, errorMessage) {
             errorAt: admin.firestore.Timestamp.now(),
         };
 
-        await db.collection('orders').doc(paymentIntent.id).set(errorOrderData);
+        await db.collection('orders').doc(paymentIntent.id).set(errorOrderData, { merge: true });
         console.log(`Error order ${paymentIntent.id} stored with status '${processStatus}'`);
 
     } catch (error) {
         console.error('Failed to store error order:', error);
     }
-}
-
-async function updateProductInventory(items) {
-    try {
-        const batch = db.batch();
-
-        for (const item of items) {
-            console.log(item)
-            const productRef = db.collection('shop').doc(item.itemId);
-            batch.update(productRef, {
-                soldCount: admin.firestore.FieldValue.increment(item.quantity),
-                lastSoldAt: admin.firestore.Timestamp.now()
-            });
-        }
-
-        await batch.commit();
-        console.log('Product inventory updated successfully');
-
-    } catch (error) {
-        console.error('Error updating product inventory:', error);
-        // Don't throw - inventory update failure shouldn't fail the webhook
-    }
-}
-
-
-async function createUserProducts(orderId, userId, orderItems) {
-    try {
-        const batch = db.batch();
-
-        for (const item of orderItems) {
-            // Get full product details from products collection
-            const productDoc = await db.collection('shop').doc(item.itemId).get();
-
-            if (!productDoc.exists) {
-                console.error(`Shop Item ${item.itemId} not found`);
-                continue;
-            }
-
-            const product = productDoc.data();
-
-            // Skip non-ticket products (they don't need special handling)
-            // TODO: this will be handled in the future
-            /*  if (product.category !== 'tickets') {
-               // For merchandise, just create a simple user product record
-               await createSimpleUserProduct(batch, orderId, userId, product, item);
-               continue;
-             } */
-
-            // Handle ticket products - create one user product per quantity
-            const productsRefs = await Promise.all(product.products.map(ref => ref.get()));
-           
-            
-            for (let i = 0; i < item.quantity; i++) {
-                //if (product.type === 'single_ticket') {
-                await createTicketUserProduct(batch, orderId, userId, product, productsRefs, item, i + 1);
-                /* } else if (product.type === 'ticket_package') {
-                  await createPackageUserProduct(batch, orderId, userId, product, item, i + 1);
-                } */
-            }
-        }
-
-        await batch.commit();
-        console.log(`Created user products for order ${orderId}`);
-
-    } catch (error) {
-        console.error('Error creating user products:', error);
-        throw error;
-    }
-}
-
-async function createTicketUserProduct(batch, orderId, userId, product, productsRefs, item, sequence) {
-    const dateString = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    let subsequence = 0;
-    
-    for (const productDoc of productsRefs) {
-        const uniqueString = Math.random().toString(36).substring(2, 8).toUpperCase();
-        const productData = productDoc.data();
-        const orderSlice = orderId.slice(-6).toUpperCase();
-        const userProductId = `USRPRD-${orderSlice}-${productDoc.id}-${dateString}${sequence}`;
-        const productRef = db.collection('userProducts').doc(userId).collection('products').doc(userProductId);
-        
-        console.log("productDoc ID:", productDoc.id);
-        console.log("Product Data", productData);
-        
-        if (productData.category === "ticket") {
-            const ticketNumber = `TCKT-${orderSlice}${userId.slice(0,4)}${dateString}${sequence}${subsequence}-${uniqueString}`;
-            const ticketRef = db.collection('tickets').doc(ticketNumber);
-            
-            
-            
-            // Create ticket document
-            batch.set(ticketRef, {
-                userId: userId,
-                name: productData.name,
-                userProductIdRef: userProductId,
-                status: 'active',
-                validationSecret: generateValidationSecret(),
-                valid: true,
-                ticketNumberRef: ticketNumber,
-                ticketId: productDoc.id,
-                imgUrl: productData.imgUrl || null,
-                validFrom: productData.validFrom, // Fixed typo
-                validUntil: productData.validUntil,
-                eventId: productData.eventId,
-                category: productData.category
-            });
-            
-            console.log("Saving user Product on ref", ticketNumber);
-            
-            // Create user product document for ticket
-            batch.set(productRef, {
-                userId: userId,
-                userProductIdRef: userProductId,
-                status: 'active',
-                validationSecret: generateValidationSecret(),
-                valid: true,
-                ticketNumberRef: ticketNumber,
-                productIdRef: productDoc.id,
-                validFrom: productData.validFrom, // Fixed typo
-                validUntil: productData.validUntil,
-                eventId: productData.eventId,
-                category: productData.category // Fixed reference
-            });
-        } else {
-            console.log("Saving user as not Ticket Product on ref", productRef);
-            
-            // Create user product document for non-ticket
-            batch.set(productRef, {
-                userId: userId,
-                userProductIdRef: userProductId,
-                productIdRef: productDoc.id, // Fixed: removed duplicate productId
-                status: 'active',
-                validationSecret: generateValidationSecret(),
-                valid: true,
-                eventId: productData.eventId,
-                category: productData.category
-            });
-        }
-        
-        subsequence++; // Increment subsequence for each product
-    }
-}
-
-
-
-
-function generateValidationSecret() {
-    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    let result = 'vld_';
-    for (let i = 0; i < 16; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
 }

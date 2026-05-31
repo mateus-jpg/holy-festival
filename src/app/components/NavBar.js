@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { LogIn, LogOut, Menu, ShoppingCart, Ticket, User, X } from 'lucide-react';
+import { LogIn, LogOut, Menu, QrCode, ShoppingCart, Ticket, TicketPlus, User, X } from 'lucide-react';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { eventContent } from '@/app/lib/eventContent';
 
@@ -17,6 +17,11 @@ const privateLinks = [
   { href: '/profile', label: 'Profilo', icon: User },
   { href: '/shop', label: 'Biglietti', icon: Ticket },
   { href: '/tickets', label: 'I tuoi biglietti', icon: Ticket },
+];
+
+const adminLinks = [
+  { href: '/admin/generate-tickets', label: 'Genera', icon: TicketPlus },
+  { href: '/admin/validate', label: 'Valida QR', icon: QrCode },
 ];
 
 const Logo = () => (
@@ -74,6 +79,11 @@ export default function Navbar() {
               </Link>
             ))}
             {user && privateLinks.map((link) => (
+              <Link key={link.href} href={link.href} className={linkClass(link.href)}>
+                {link.label}
+              </Link>
+            ))}
+            {user?.isAdmin && adminLinks.map((link) => (
               <Link key={link.href} href={link.href} className={linkClass(link.href)}>
                 {link.label}
               </Link>
@@ -136,6 +146,20 @@ export default function Navbar() {
               </Link>
             ))}
             {user && privateLinks.map((link) => {
+              const Icon = link.icon;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`${linkClass(link.href)} flex items-center gap-2`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Icon className="h-4 w-4" />
+                  {link.label}
+                </Link>
+              );
+            })}
+            {user?.isAdmin && adminLinks.map((link) => {
               const Icon = link.icon;
               return (
                 <Link

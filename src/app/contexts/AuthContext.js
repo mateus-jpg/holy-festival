@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import {
-  User as FirebaseUser,
   onAuthStateChanged,
   signInWithPopup,
   signInWithEmailAndPassword,
@@ -10,8 +9,6 @@ import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail as firebaseSendPasswordResetEmail,
   signOut as firebaseSignOut,
-  signInWithRedirect,
-  currentUser,
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, googleProvider, db } from '@/app/lib/firebase';
@@ -203,7 +200,7 @@ export const AuthProvider = ({ children }) => {
 
 
   const getUserIdToken = useCallback(async (forceRefresh = false) => {
-    const currentUser = auth.currentUser;
+    const currentUser = auth?.currentUser;
     if (currentUser) {
       try {
         const idToken = await currentUser.getIdToken(forceRefresh);

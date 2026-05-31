@@ -8,6 +8,27 @@ import { db, isFirebaseConfigured } from '@/app/lib/firebase';
 import toast, { Toaster } from 'react-hot-toast';
 import ShopFabButton from '../components/ShopFabButton';
 import { eventContent } from '@/app/lib/eventContent';
+import { createCartItem, readCart, writeCart } from '@/app/utils/cart';
+
+function getAvailableStock(product) {
+  const availableStock = Number(product.availableStock);
+  if (Number.isFinite(availableStock)) {
+    return availableStock;
+  }
+
+  const totalStock = Number(product.totalStock);
+  const soldCount = Number(product.soldCount || 0);
+  if (Number.isFinite(totalStock)) {
+    return Math.max(totalStock - soldCount, 0);
+  }
+
+  return null;
+}
+
+function isProductAvailable(product) {
+  const availableStock = getAvailableStock(product);
+  return availableStock === null || availableStock > 0;
+}
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -45,9 +66,10 @@ export default function Products() {
       querySnapshot.forEach((doc) => {
 
         const product = { id: doc.id, ...doc.data() };
-        if (product.soldCount<= product.totalStock){
-
-            productsData.push(product);
+        const availableStock = getAvailableStock(product);
+        const productWithStock = { ...product, availableStock };
+        if (isProductAvailable(productWithStock)) {
+            productsData.push(productWithStock);
         }
       });
 
@@ -70,29 +92,47 @@ export default function Products() {
   };
 
   const loadCart = () => {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      setCart(JSON.parse(savedCart));
-    }
+    setCart(readCart());
   };
 
   const addToCart = (product) => {
+    const availableStock = getAvailableStock(product);
     const existingItem = cart.find(item => item.id === product.id);
     let updatedCart;
 
     if (existingItem) {
+      if (availableStock !== null && existingItem.quantity >= availableStock) {
+        toast.error('Hai raggiunto la disponibilità massima per questo biglietto.', {
+          duration: 2500,
+          position: 'top-center',
+          style: {
+            background: '#8f2f18',
+            color: '#fff',
+            fontWeight: '500',
+          },
+        });
+        return;
+      }
+
       updatedCart = cart.map(item =>
         item.id === product.id
           ? { ...item, quantity: item.quantity + 1 }
           : item
       );
     } else {
-      updatedCart = [...cart, { ...product, quantity: 1 }];
+      const cartItem = createCartItem(product, 1);
+      if (!cartItem) {
+        toast.error('Questo biglietto non può essere aggiunto al carrello.', {
+          duration: 2500,
+          position: 'top-center',
+        });
+        return;
+      }
+
+      updatedCart = [...cart, cartItem];
     }
 
-    setCart(updatedCart);
-    localStorage.setItem('cart', JSON.stringify(updatedCart));
-    window.dispatchEvent(new Event('cart-updated'));
+    setCart(writeCart(updatedCart));
 
     // Sostituisci l'alert con un toast
     toast.success(`${product.name} aggiunto al carrello!`, {
@@ -180,7 +220,7 @@ export default function Products() {
                     <span className="text-xl font-bold">
                       €{product.price?.toFixed(2) || '0.00'}
                     </span>
-                    {product.availableStock && product.availableStock > 0 ? (
+                    {isProductAvailable(product) ? (
                       <button
                         onClick={() => addToCart(product)}
                         className="rounded-full bg-[#c5471f] px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-[#8f2f18]"

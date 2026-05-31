@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Suspense } from 'react';
+import { clearCart } from '@/app/utils/cart';
 
 export function CompletionPageInner() {
   const searchParams = useSearchParams();
@@ -27,7 +28,7 @@ export function CompletionPageInner() {
     if (redirectStatus === 'succeeded') {
       setStatus('success');
       // Clear the cart from local storage after a successful payment
-      localStorage.removeItem('cart');
+      clearCart();
     } else if (redirectStatus === 'failed') {
       setStatus('error');
       setError(

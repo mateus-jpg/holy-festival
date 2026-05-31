@@ -6,54 +6,26 @@ import { Elements } from '@stripe/react-stripe-js';
 import { stripePromise } from '@/app/lib/stripe';
 import CheckoutForm from '@/app/components/CheckoutForm';
 import { AppConfig } from '@/app/lib/config';
+import { calculateCartTotals } from '@/app/lib/cartTotals';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { AlertTriangle } from 'lucide-react';
+import { readCart, writeCart } from '@/app/utils/cart';
 
 // Create payment intent and save initial order
-async function createPaymentIntentAndOrder(cart, user) {
-  const getSubtotalAll = () => {
-    return cart.reduce((total, item) => total + item.price * item.quantity, 0);
+async function createPaymentIntentAndOrder(cart, user, idToken) {
+  const totals = calculateCartTotals(cart);
+  const authHeaders = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${idToken}`,
   };
-
-  const getSubtotalWithFees = () => {
-    return cart
-      .filter((item) => item.withFees || item.withFee)
-      .reduce((total, item) => total + item.price * item.quantity, 0);
-  };
-
-  const getTax = (subtotal) => {
-    return subtotal * AppConfig.TAX_RATE;
-  };
-
-  const getFees = (feeBase) => {
-    return feeBase > 0
-      ? feeBase * AppConfig.TRANSACTION_RATE + AppConfig.TRANSACTION_FEE
-      : 0;
-  };
-
-  const subtotalAll = getSubtotalAll();
-  const subtotalWithFees = getSubtotalWithFees();
-
-  const tax = getTax(subtotalAll);
-
-  // Proportional tax share for items with fees
-  const taxOnWithFees =
-    subtotalAll > 0 ? (subtotalWithFees / subtotalAll) * tax : 0;
-
-  const feeBase = subtotalWithFees + taxOnWithFees;
-  const fees = getFees(feeBase);
-
-  // Final total (in cents)
-  const total = Math.round((subtotalAll + tax + fees) * 100);
-
   try {
     // Step 1: Create payment intent
     const paymentResponse = await fetch('/api/create-payment-intent', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders,
       body: JSON.stringify({
         userId: user.uid,
-        amount: total,
+        amount: totals.totalCents,
         items: cart,
         currency: AppConfig.CURRENCY,
       }),
@@ -72,18 +44,18 @@ async function createPaymentIntentAndOrder(cart, user) {
     try {
       const orderResponse = await fetch('/api/save-order', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders,
         body: JSON.stringify({
           paymentIntentId: paymentData.payload.id,
           userId: user.uid,
           items: cart,
-          amount: total,
+          amount: totals.totalCents,
           currency: AppConfig.CURRENCY,
           processStatus: 'processing',
           paymentStatus: 'requires_payment_method',
-          subtotal: Math.round(subtotalAll * 100),
-          tax: Math.round(tax * 100),
-          fees: Math.round(fees * 100),
+          subtotal: totals.subtotalCents,
+          tax: totals.taxCents,
+          fees: totals.feesCents,
           clientSecret: paymentData.client_secret,
         }),
       });
@@ -109,7 +81,7 @@ async function createPaymentIntentAndOrder(cart, user) {
 }
 
 export default function CheckoutPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading, getUserIdToken } = useAuth();
   const [clientSecret, setClientSecret] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -119,6 +91,13 @@ export default function CheckoutPage() {
   useEffect(() => {
     const initializeCheckout = async () => {
       try {
+        if (authLoading) {
+          return;
+        }
+
+        setLoading(true);
+        setError('');
+
         // Check if user is authenticated
         if (!user) {
           setError('Accedi per continuare con il checkout.');
@@ -127,7 +106,7 @@ export default function CheckoutPage() {
         }
 
         // Get cart from localStorage
-        const savedCart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const savedCart = readCart();
         if (savedCart.length === 0) {
           setError('Il tuo carrello è vuoto.');
           setLoading(false);
@@ -153,13 +132,20 @@ export default function CheckoutPage() {
 
         if (validatedCart.length !== savedCart.length) {
           console.warn('Some invalid items were removed from cart');
-          localStorage.setItem('cart', JSON.stringify(validatedCart));
+          writeCart(validatedCart);
         }
 
         setCart(validatedCart);
+        const idToken = await getUserIdToken();
+
+        if (!idToken) {
+          setError('Sessione non valida. Accedi di nuovo per continuare.');
+          setLoading(false);
+          return;
+        }
 
         // Create payment intent and save initial order
-        const data = await createPaymentIntentAndOrder(validatedCart, user);
+        const data = await createPaymentIntentAndOrder(validatedCart, user, idToken);
         setClientSecret(data.client_secret);
         setPaymentIntentId(data.payload.id);
       } catch (err) {
@@ -173,7 +159,7 @@ export default function CheckoutPage() {
     };
 
     initializeCheckout();
-  }, [user]);
+  }, [user, authLoading, getUserIdToken]);
 
   // Handle successful payment (called from CheckoutForm)
   const handlePaymentSuccess = async (paymentIntent) => {

@@ -8,7 +8,8 @@ import {
   handlePaymentIntentRequiresAction,
   
  } from '@/app/api/webhooks/stripe/paymentHandlers'
-// Initialize Firebase Admin SDK
+
+export const runtime = 'nodejs';
 
 export async function POST(request) {
   const stripeKey = process.env.STRIPE_SECRET_KEY;

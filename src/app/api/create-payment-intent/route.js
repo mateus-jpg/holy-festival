@@ -1,154 +1,192 @@
 // src/app/api/create-payment-intent/route.js
 import Stripe from 'stripe';
 import { NextResponse } from 'next/server';
-import { headers } from 'next/headers';
 import rateLimit from '@/app/lib/rate-limit';
-import { getProductPrice } from '@/app/lib/products';
+import { getProduct } from '@/app/lib/products';
 import { AppConfig } from '@/app/lib/config';
-import Products from '@/app/shop/page';
+import { calculateCartTotals } from '@/app/lib/cartTotals';
+import { verifyFirebaseIdToken } from '@/app/lib/server-auth';
 
+export const runtime = 'nodejs';
 
-const stripeKey = process.env.STRIPE_SECRET_KEY
 // Rate limiter: 10 requests per minute per IP
 const limiter = rateLimit({
     interval: 60 * 1000, // 1 minute
     uniqueTokenPerInterval: 500, // Max 500 unique IPs per window
 });
 
+function getRequestIp(request) {
+    return (
+        request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+        request.headers.get('x-real-ip') ||
+        'anonymous'
+    );
+}
+
+function getAvailableStock(product) {
+    const availableStock = Number(product.availableStock);
+    if (Number.isFinite(availableStock)) {
+        return availableStock;
+    }
+
+    const totalStock = Number(product.totalStock);
+    const soldCount = Number(product.soldCount || 0);
+    if (Number.isFinite(totalStock)) {
+        return Math.max(totalStock - soldCount, 0);
+    }
+
+    return null;
+}
+
+function jsonError(error, status) {
+    return NextResponse.json({ error }, { status });
+}
+
 export async function POST(request) {
 
     try {
-
-        const stripe = new Stripe(stripeKey);/* , {
-            apiVersion: '2023-10-16',
-        } );*/
         // Rate limiting
-        const ip = request.headers.get('x-forwarded-for') || request.ip || 'anonymous';
+        const ip = getRequestIp(request);
 
         try {
             await limiter.check(request, 10, ip);
         } catch {
             console.error('Rate limit exceeded');
-            return NextResponse.json(
-                { error: 'Rate limit exceeded' },
-                { status: 429 }
-            );
+            return jsonError('Rate limit exceeded', 429);
         }
 
         // Validate environment variables
-        if (!process.env.STRIPE_SECRET_KEY) {
+        const stripeKey = process.env.STRIPE_SECRET_KEY;
+        if (!stripeKey) {
             console.error('STRIPE_SECRET_KEY is not configured');
-            return NextResponse.json(
-                { error: 'Payment system configuration error' },
-                { status: 500 }
-            );
+            return jsonError('Payment system configuration error', 500);
         }
 
-        const body = await request.json();
-        const { amount, currency = AppConfig.CURRENCY, items = [], userId } = body;
+        const decodedToken = await verifyFirebaseIdToken(request);
+        if (!decodedToken) {
+            return jsonError('Authentication required', 401);
+        }
+
+        const stripe = new Stripe(stripeKey, {
+            apiVersion: '2023-10-16',
+        });
+
+        let body;
+        try {
+            body = await request.json();
+        } catch {
+            return jsonError('Invalid JSON body', 400);
+        }
+
+        const { amount, currency = AppConfig.CURRENCY, items = [], userId: bodyUserId } = body;
+        const userId = decodedToken.uid;
+
+        if (bodyUserId && bodyUserId !== userId) {
+            return jsonError('Authenticated user does not match order user', 403);
+        }
 
         // Input validation
-        if (!amount || typeof amount !== 'number' || amount < AppConfig.MIN_AMOUNT) {
-            console.error('Invalid amount. Minimum $0.50 required.')
-            return NextResponse.json(
-                { error: 'Invalid amount. Minimum $0.50 required.' },
-                { status: 400 }
-            );
+        const requestedAmount = Number(amount);
+        const minimumAmountCents = Math.round(AppConfig.MIN_AMOUNT * 100);
+        if (!Number.isInteger(requestedAmount) || requestedAmount < minimumAmountCents) {
+            console.error('Invalid amount. Minimum configured amount required.');
+            return jsonError(`Invalid amount. Minimum ${AppConfig.MIN_AMOUNT.toFixed(2)} ${AppConfig.CURRENCY.toUpperCase()} required.`, 400);
         }
 
-        if (amount > 100000000) { // $1M limit
-            console.error('Amount exceeds maximumm limit')
-            return NextResponse.json(
-                { error: 'Amount exceeds maximum limit' },
-                { status: 400 }
-            );
+        if (requestedAmount > 100000000) {
+            console.error('Amount exceeds maximum limit');
+            return jsonError('Amount exceeds maximum limit', 400);
+        }
+
+        const requestedCurrency = String(currency || '').toLowerCase();
+        if (requestedCurrency !== AppConfig.CURRENCY) {
+            return jsonError('Unsupported currency', 400);
         }
 
         if (!Array.isArray(items) || items.length === 0) {
-            console.error('invalid or empty cart')
-            return NextResponse.json(
-                { error: 'Invalid or empty cart' },
-                { status: 400 }
-            );
+            console.error('Invalid or empty cart');
+            return jsonError('Invalid or empty cart', 400);
         }
 
-        // Validate cart items and recalculate total server-side
-        let calculatedTotal = 0;
-        let calculatedTotalWithFees = 0;
+        if (items.length > 50) {
+            return jsonError('Cart contains too many items', 400);
+        }
+
         const validatedItems = [];
 
         for (const item of items) {
-            // In production, fetch actual prices from Firestore
-            // This prevents price manipulation on client-side
-            if (!item.id || !item.price || !item.quantity || item.quantity < 1) {
-                console.error('invalid cart item')
-                return NextResponse.json(
-                    { error: 'Invalid cart item' },
-                    { status: 400 }
-                );
+            const quantity = Number(item.quantity);
+
+            if (
+                !item.id ||
+                !Number.isInteger(quantity) ||
+                quantity < 1 ||
+                quantity > 100
+            ) {
+                console.error('Invalid cart item');
+                return jsonError('Invalid cart item', 400);
             }
 
+            let product;
+            try {
+                product = await getProduct(String(item.id));
+            } catch (error) {
+                if (error.status === 404) {
+                    return jsonError('Product not found', 400);
+                }
 
-            // TODO: block IP
-            const actualPrice = await getProductPrice(item.id);
-            if (actualPrice !== item.price) {
-                console.error("Price mismatch detected")
-                return NextResponse.json(
-                    { error: 'Price mismatch detected' },
-                    { status: 400 }
-                );
+                throw error;
+            }
+            const productPrice = Number(product.price);
+
+            if (product.isActive === false) {
+                return jsonError(`Product ${product.id} is not available`, 400);
             }
 
-            if (item.withFees) {
-                calculatedTotalWithFees += item.price * item.quantity;
+            if (!Number.isFinite(productPrice) || productPrice <= 0) {
+                return jsonError(`Product ${product.id} has an invalid price`, 400);
             }
-            else {
 
-                calculatedTotal += item.price * item.quantity;
+            const requestedPrice = Number(item.price);
+            if (!Number.isFinite(requestedPrice) || Math.round(requestedPrice * 100) !== Math.round(productPrice * 100)) {
+                console.error('Price mismatch detected');
+                return jsonError('Price mismatch detected', 400);
             }
+
+            const availableStock = getAvailableStock(product);
+            if (availableStock !== null && quantity > availableStock) {
+                return jsonError(`Not enough stock for ${product.name || product.id}`, 400);
+            }
+
             validatedItems.push({
-                itemId: item.id,
-                category: item.category,
-                price: item.price,
-                quantity: item.quantity
+                itemId: product.id,
+                name: product.name || item.name || product.id,
+                category: product.category || '',
+                price: productPrice,
+                quantity,
+                withFees: Boolean(product.withFees || product.withFee),
             });
         }
 
-        // Add tax (8%)
-        // Total before tax
-        const totalBeforeTax = calculatedTotal + calculatedTotalWithFees;
-
-        // Apply tax to the full total
-        const tax = totalBeforeTax * AppConfig.TAX_RATE;
-
-        const withFeesTaxed = calculatedTotalWithFees + (calculatedTotalWithFees * AppConfig.TAX_RATE);
-
-
-        // Fees are applied only to the "withFees" items + their tax share
-        const fees = calculatedTotalWithFees > 0
-            ? (withFeesTaxed * AppConfig.TRANSACTION_RATE) + AppConfig.TRANSACTION_FEE
-            : 0;
-
-        // Final amount (in cents)
-        const finalTotal = Math.round((totalBeforeTax + tax + fees) * 100);
+        const totals = calculateCartTotals(validatedItems);
 
         // Verify calculated total matches requested amount
-        if (Math.abs(finalTotal - amount) > 1) { // Allow 1 cent difference for rounding
-            console.error("amount verification failde")
-            return NextResponse.json(
-                { error: 'Amount verification failed' },
-                { status: 400 }
-            );
+        if (Math.abs(totals.totalCents - requestedAmount) > 1) {
+            console.error('Amount verification failed', {
+                requestedAmount,
+                calculatedAmount: totals.totalCents,
+            });
+            return jsonError('Amount verification failed', 400);
         }
 
         // Create payment intent
         const paymentIntent = await stripe.paymentIntents.create({
-            amount: finalTotal,
-            currency: currency.toLowerCase(),
+            amount: totals.totalCents,
+            currency: requestedCurrency,
             metadata: {
-                userId: userId,
+                userId,
                 orderItems: JSON.stringify(validatedItems),
-                itemCount: validatedItems.reduce((sum, item) => sum + item.quantity, 0),
+                itemCount: String(validatedItems.reduce((sum, item) => sum + item.quantity, 0)),
             },
             automatic_payment_methods: {
                 enabled: true,
@@ -158,7 +196,7 @@ export async function POST(request) {
         return NextResponse.json({
             client_secret: paymentIntent.client_secret,
             payload: paymentIntent,
-            amount: finalTotal,
+            amount: totals.totalCents,
         });
 
     } catch (error) {
@@ -166,16 +204,9 @@ export async function POST(request) {
 
         if (error.type === 'StripeCardError') {
             console.error("Strip Card Error")
-            return NextResponse.json(
-                { error: error.message },
-                { status: 400 }
-            );
+            return jsonError(error.message, 400);
         }
 
-        return NextResponse.json(
-            { error: 'Payment processing error' },
-            { status: 500 }
-        );
+        return jsonError('Payment processing error', 500);
     }
 }
-

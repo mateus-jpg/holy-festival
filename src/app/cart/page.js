@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { AppConfig } from '@/app/lib/config';
+import { calculateCartTotals } from '@/app/lib/cartTotals';
+import { readCart, writeCart } from '@/app/utils/cart';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Cart() {
@@ -25,17 +26,12 @@ export default function Cart() {
     }, []);
 
     const loadCart = () => {
-        const savedCart = localStorage.getItem('cart');
-        if (savedCart) {
-            setCart(JSON.parse(savedCart));
-        }
+        setCart(readCart());
         setLoading(false);
     };
 
     const updateCart = (updatedCart) => {
-        setCart(updatedCart);
-        localStorage.setItem('cart', JSON.stringify(updatedCart));
-        window.dispatchEvent(new Event('cart-updated'));
+        setCart(writeCart(updatedCart));
     };
 
     const updateQuantity = (productId, newQuantity) => {
@@ -56,44 +52,7 @@ export default function Cart() {
         const updatedCart = cart.filter(item => item.id !== productId);
         updateCart(updatedCart);
     };
-    const getSubtotalAll = () => {
-        return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
-    };
-
-    // Total of only "withFee" items
-    const getSubtotalWithFees = () => {
-        return cart
-            .filter(item => item.withFee || item.withFees)
-            .reduce((total, item) => total + (item.price * item.quantity), 0);
-    };
-
-    // Tax is always applied to all items
-    const getTax = () => {
-        return getSubtotalAll() * AppConfig.TAX_RATE;
-    };
-
-    // Fees are applied only on "withFee" items + their share of tax
-    const getFees = () => {
-        const withFeesSubtotal = getSubtotalWithFees();
-        const allSubtotal = getSubtotalAll();
-
-        if (withFeesSubtotal === 0 || allSubtotal === 0) return 0;
-
-        // Proportional tax on withFee items
-        const taxShare = (withFeesSubtotal / allSubtotal) * getTax();
-        const feeBase = withFeesSubtotal + taxShare;
-
-        return (feeBase * AppConfig.TRANSACTION_RATE) + AppConfig.TRANSACTION_FEE;
-    };
-
-    // Final total
-    const getTotal = () => {
-        const subtotal = getSubtotalAll();
-        const tax = getTax();
-        const fees = getFees();
-
-        return subtotal + tax + fees;
-    };
+    const totals = calculateCartTotals(cart);
     const handleCheckout = () => {
         if (cart.length === 0) {
             alert('Il tuo carrello è vuoto!');
@@ -216,16 +175,16 @@ export default function Cart() {
                                 <div className="space-y-2 mb-4">
                                     <div className="flex justify-between">
                                         <span>Subtotale</span>
-                                        <span>{getSubtotalAll().toFixed(2)}€</span>
+                                        <span>{totals.subtotal.toFixed(2)}€</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span>Commissioni</span>
-                                        <span>{getFees().toFixed(2)}€</span>
+                                        <span>{totals.fees.toFixed(2)}€</span>
                                     </div>
                                     <div className="border-t border-[#012136]/12 pt-2">
                                         <div className="flex justify-between font-semibold text-lg">
                                             <span>Totale</span>
-                                            <span>{getTotal().toFixed(2)}€</span>
+                                            <span>{totals.total.toFixed(2)}€</span>
                                         </div>
                                     </div>
                                 </div>
