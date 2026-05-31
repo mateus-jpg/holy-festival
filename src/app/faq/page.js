@@ -1,90 +1,63 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, Ticket, MapPin, Car, Utensils, Clock, Bus, Users, Heart } from 'lucide-react';
+import Link from 'next/link';
+import { Calendar, ChevronDown, ExternalLink, HeartHandshake, MapPin, Ticket, Users } from 'lucide-react';
+import { eventContent } from '@/app/lib/eventContent';
 
 const faqs = [
   {
-    icon: <Ticket className="w-5 h-5 text-indigo-400" />,
-    question: 'Quanto costano i biglietti?',
-    answer:
-      "L'ingresso per una singola serata costa \u20AC10. L'abbonamento per tutte e tre le serate costa \u20AC20. I biglietti sono acquistabili in prevendita dallo Shop dell'app.",
+    icon: Calendar,
+    question: 'Quando si svolge la GMR 2026?',
+    answer: 'Gli appuntamenti pubblicati sono in programma il 12, 13, 18, 19, 20 e 21 giugno 2026 a Verona.',
   },
   {
-    icon: <Ticket className="w-5 h-5 text-indigo-400" />,
-    question: 'Posso entrare senza biglietto?',
-    answer:
-      "No, l'ingresso \u00e8 consentito esclusivamente con biglietto o abbonamento acquistato in prevendita.",
+    icon: MapPin,
+    question: 'Dove si svolgono gli eventi?',
+    answer: 'Il programma attraversa Forte Sofia, Community Center Verona, Università degli Studi di Verona e Stazione Verona Porta Nuova.',
   },
   {
-    icon: <MapPin className="w-5 h-5 text-green-400" />,
-    question: 'Dove si trova Forte Sofia?',
-    answer:
-      'Forte Sofia si trova in Via Monte Novegno, Verona. Si accede da Via San Leonardo. Il forte \u00e8 raggiungibile a piedi, in bici o in auto.',
+    icon: Ticket,
+    question: 'Come funzionano biglietti e prenotazioni?',
+    answer: 'Gli eventi indicati come su prenotazione avranno link dedicati. I biglietti acquistati nello shop restano disponibili nella tua area biglietti con QR code.',
   },
   {
-    icon: <Car className="w-5 h-5 text-amber-400" />,
-    question: "C'\u00e8 parcheggio?",
-    answer:
-      "S\u00ec, il parcheggio \u00e8 gratuito ma i posti sono limitati. Ti consigliamo di arrivare in anticipo o di valutare il trasporto pubblico.",
+    icon: Users,
+    question: 'Posso partecipare come volontariə?',
+    answer: 'Sì. Servono persone per allestimenti, accoglienza, bar, cucina, gestione degli spazi e smontaggio. Anche poche ore sono utili.',
   },
   {
-    icon: <Bus className="w-5 h-5 text-blue-400" />,
-    question: 'Come posso arrivare con i mezzi pubblici?',
-    answer:
-      "Puoi prendere le linee bus dirette all'Ospedale Maggiore. La sera \u00e8 attiva anche la linea 85.",
+    icon: HeartHandshake,
+    question: 'Chi organizza la Giornata Mondiale del Rifugiato?',
+    answer: 'L’iniziativa è curata da One Bridge To-, associazione nata nel 2016 a partire dall’esperienza di Idomeni e attiva lungo la Rotta Balcanica e a Verona.',
   },
   {
-    icon: <Clock className="w-5 h-5 text-purple-400" />,
-    question: 'A che ora inizia la musica?',
-    answer:
-      'Venerd\u00ec 19 e Sabato 20 settembre la musica inizia alle 19:00. Domenica 21 settembre si parte prima, alle 16:00.',
-  },
-  {
-    icon: <Utensils className="w-5 h-5 text-orange-400" />,
-    question: "Si pu\u00f2 mangiare al festival?",
-    answer:
-      "S\u00ec! Ogni sera \u00e8 disponibile la cena in loco preparata da Osteria Nosetta.",
-  },
-  {
-    icon: <Users className="w-5 h-5 text-cyan-400" />,
-    question: 'Posso fare il volontario?',
-    answer:
-      "Certo! Puoi unirti al team di volontari compilando il modulo disponibile sul sito di One Bridge To. Aiutaci a creare un Festival della Madonna!",
-  },
-  {
-    icon: <Heart className="w-5 h-5 text-red-400" />,
-    question: 'Dove vanno i fondi raccolti?',
-    answer:
-      'Il ricavato di tutte le serate va a sostegno di una clinica e di un centro comunitario nel campo profughi di Bajed Kandala, nel Kurdistan iracheno.',
-  },
-  {
-    icon: <Heart className="w-5 h-5 text-red-400" />,
-    question: 'Chi organizza Holy Festival?',
-    answer:
-      'Il festival \u00e8 organizzato da One Bridge To in collaborazione con RedLab, Osteria ai Preti e Santa Maria Craft Pub. La parte gastronomica \u00e8 curata da Osteria Nosetta.',
+    icon: HeartHandshake,
+    question: 'Qual è il tema del 2026?',
+    answer: 'Il claim è “Una frontiera che si chiude, un percorso che si apre”: memoria, confini, diritti, cura e percorsi collettivi che restano aperti.',
   },
 ];
 
 function FaqItem({ faq }) {
   const [open, setOpen] = useState(false);
+  const Icon = faq.icon;
 
   return (
-    <div className="border border-white/10 rounded-xl overflow-hidden">
+    <div className="overflow-hidden rounded-lg border border-[#012136]/12 bg-white shadow-sm">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-3 px-6 py-4 text-left hover:bg-white/5 transition-colors"
+        className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-[#012136]/5"
       >
-        {faq.icon}
-        <span className="flex-1 font-medium">{faq.question}</span>
+        <Icon className="h-5 w-5 text-[#c5471f]" />
+        <span className="flex-1 font-black text-[#012136]">{faq.question}</span>
         <ChevronDown
-          className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${
+          className={`h-5 w-5 text-[#012136]/50 transition-transform duration-200 ${
             open ? 'rotate-180' : ''
           }`}
         />
       </button>
       {open && (
-        <div className="px-6 pb-5 pt-1 text-gray-400 text-sm leading-relaxed ml-8">
+        <div className="px-5 pb-5 pt-1 text-sm leading-relaxed text-[#012136]/70">
           {faq.answer}
         </div>
       )}
@@ -94,21 +67,39 @@ function FaqItem({ faq }) {
 
 export default function FaqPage() {
   return (
-    <div className="min-h-screen pb-20">
-      <section className="flex flex-col items-center text-center px-6 pt-16 pb-12">
-        <h1 className="font-cuanky text-5xl md:text-6xl mb-4">Domande Frequenti</h1>
-        <p className="text-gray-400 max-w-xl">
-          Tutto quello che devi sapere su Holy Festival 2025.
+    <main className="min-h-screen pb-20">
+      <section className="mx-auto flex max-w-4xl flex-col items-center px-6 pb-10 pt-14 text-center">
+        <p className="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-[#c5471f]">
+          {eventContent.shortName}
+        </p>
+        <h1 className="text-5xl font-black text-[#012136] md:text-6xl">Domande frequenti</h1>
+        <p className="mt-5 max-w-2xl leading-relaxed text-[#012136]/72">
+          Le informazioni essenziali su programma, luoghi, prenotazioni e volontariato.
         </p>
       </section>
 
-      <section className="max-w-3xl mx-auto px-6">
+      <section className="mx-auto max-w-3xl px-6">
         <div className="space-y-3">
-          {faqs.map((faq, i) => (
-            <FaqItem key={i} faq={faq} />
+          {faqs.map((faq) => (
+            <FaqItem key={faq.question} faq={faq} />
           ))}
         </div>
+
+        <div className="mt-8 rounded-lg border border-[#012136]/12 bg-[#012136] p-6 text-white shadow-sm">
+          <h2 className="text-xl font-black">Modulo volontariə</h2>
+          <p className="mt-2 text-sm leading-relaxed text-white/76">
+            Per dare disponibilità su una o più giornate puoi usare il modulo pubblicato da One Bridge To-.
+          </p>
+          <Link
+            href={eventContent.volunteerUrl}
+            target="_blank"
+            className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-bold text-[#012136] transition-colors hover:bg-[#f1b84b]"
+          >
+            Apri modulo
+            <ExternalLink className="h-4 w-4" />
+          </Link>
+        </div>
       </section>
-    </div>
+    </main>
   );
 }

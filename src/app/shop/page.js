@@ -2,25 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { collection, getDocs, query, orderBy, where } from 'firebase/firestore';
-import { db } from '@/app/lib/firebase'; // You'll need to create this
-import { useAuth } from '@/app/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
-import { set } from 'zod';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db, isFirebaseConfigured } from '@/app/lib/firebase';
 // Importa react-hot-toast
 import toast, { Toaster } from 'react-hot-toast';
 import ShopFabButton from '../components/ShopFabButton';
+import { eventContent } from '@/app/lib/eventContent';
 
 export default function Products() {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [categories, setCategories] = useState(['All']);
+  const [selectedCategory] = useState('All');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [cart, setCart] = useState([]);
-  const router = useRouter();
-  const { user } = useAuth();
 
   useEffect(() => {
     fetchProducts();
@@ -32,6 +27,12 @@ export default function Products() {
   }, [selectedCategory, products]);
 
   const fetchProducts = async () => {
+    if (!isFirebaseConfigured || !db) {
+      setLoadError('Firebase non è configurato in locale. Aggiungi le variabili NEXT_PUBLIC_FIREBASE_* per caricare i biglietti.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const q = query(
         collection(db, 'shop'),
@@ -51,9 +52,11 @@ export default function Products() {
       });
 
       setProducts(productsData);
+      setLoadError('');
       setLoading(false);
     } catch (error) {
       console.error('Error fetching products:', error);
+      setLoadError('Non riesco a caricare i biglietti in questo momento. Riprova tra poco.');
       setLoading(false);
     }
   };
@@ -89,6 +92,7 @@ export default function Products() {
 
     setCart(updatedCart);
     localStorage.setItem('cart', JSON.stringify(updatedCart));
+    window.dispatchEvent(new Event('cart-updated'));
 
     // Sostituisci l'alert con un toast
     toast.success(`${product.name} aggiunto al carrello!`, {
@@ -96,17 +100,11 @@ export default function Products() {
       position: 'top-center',
       // Stile personalizzato
       style: {
-        background: '#10B981',
+        background: '#012136',
         color: '#fff',
         fontWeight: '500',
       },
-      // Icona personalizzata
-      icon: '🛒',
     });
-  };
-
-  const getCartItemCount = () => {
-    return cart.reduce((total, item) => total + item.quantity, 0);
   };
 
   if (loading) {
@@ -118,21 +116,31 @@ export default function Products() {
   }
 
   return (
-    <div className="h-100% bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
       <ShopFabButton />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         {/* Category Filter */}
 
-        <div className="flex justify-between items-center h-16">
-          <h1 className="text-3xl font-cuanky font-bold mb-8">Shop</h1>
+        <div className="mb-8 flex flex-col gap-2">
+          <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#c5471f]">{eventContent.shortName}</p>
+          <h1 className="text-4xl font-black text-[#012136]">Biglietti</h1>
+          <p className="max-w-2xl text-[#012136]/70">
+            Seleziona gli ingressi disponibili e completa l’acquisto in sicurezza.
+          </p>
         </div>
 
         {/* Products Grid */}
-        {filteredProducts.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-lg text-gray-400">
-              No products found in this category.
+        {loadError ? (
+          <div className="rounded-lg border border-[#c5471f]/20 bg-white px-6 py-12 text-center shadow-sm">
+            <p className="text-lg font-semibold text-[#8f2f18]">
+              {loadError}
+            </p>
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="rounded-lg border border-[#012136]/12 bg-white px-6 py-12 text-center shadow-sm">
+            <p className="text-lg text-[#012136]/65">
+              Nessun biglietto disponibile in questo momento.
             </p>
           </div>
         ) : (
@@ -140,10 +148,10 @@ export default function Products() {
             {filteredProducts.map((product) => (
               <div
                 key={product.id}
-                className="border border-white/[.145] rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+                className="overflow-hidden rounded-lg border border-[#012136]/12 bg-white shadow-sm transition-shadow hover:shadow-lg"
               >
                 {/* Product Image */}
-                <div className="aspect-square relative bg-gray-800">
+                <div className="relative aspect-square bg-[#012136]/8">
                   {product.imgUrl ? (
                     <Image
                       src={product.imgUrl}
@@ -152,8 +160,8 @@ export default function Products() {
                       className="object-cover"
                     />
                   ) : (
-                    <div className="flex items-center justify-center h-full text-gray-400">
-                      No Image
+                    <div className="flex h-full items-center justify-center text-[#012136]/45">
+                      Nessuna immagine
                     </div>
                   )}
                 </div>
@@ -164,7 +172,7 @@ export default function Products() {
                     {product.name}
                   </h3>
                   {product.description && (
-                    <p className="text-sm text-gray-400 mb-3 line-clamp-2">
+                    <p className="text-sm text-[#012136]/62 mb-3 line-clamp-2">
                       {product.description}
                     </p>
                   )}
@@ -175,13 +183,13 @@ export default function Products() {
                     {product.availableStock && product.availableStock > 0 ? (
                       <button
                         onClick={() => addToCart(product)}
-                        className="bg-foreground text-background px-4 py-2 rounded-full text-sm font-medium hover:bg-[#ccc] transition-colors"
+                        className="rounded-full bg-[#c5471f] px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-[#8f2f18]"
                       >
-                        Aggiungi al Carrello
+                        Aggiungi
                       </button>
                     ) : (
-                      <span className="text-red-500 text-sm font-medium">
-                        Non più disponibile
+                      <span className="text-sm font-bold text-[#8f2f18]">
+                        Non disponibile
                       </span>
                     )}
                   </div>

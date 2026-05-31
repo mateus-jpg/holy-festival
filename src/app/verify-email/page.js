@@ -31,9 +31,9 @@ export default function VerifyEmailPage() {
     setMessage('');
     try {
       await resendVerificationEmail();
-      setMessage('A new verification email has been sent.');
+      setMessage('Una nuova email di verifica è stata inviata.');
     } catch (err) {
-      setError('Failed to resend email. Please wait a few minutes and try again.');
+      setError('Impossibile inviare l’email. Attendi qualche minuto e riprova.');
     }
     setResendLoading(false);
   };
@@ -47,34 +47,34 @@ export default function VerifyEmailPage() {
   }
   
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 text-center">
-      <div className="max-w-md w-full bg-white shadow-lg rounded-xl p-8">
-        <MailCheck className="w-16 h-16 mx-auto text-blue-600 mb-4" />
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">Verify Your Email</h1>
-        <p className="text-gray-600 mb-6">
-          A verification link has been sent to <strong>{user.email}</strong>. Please check your inbox (and spam folder) to continue.
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 text-center">
+      <div className="max-w-md w-full bg-white shadow-sm rounded-lg border border-[#012136]/12 p-8">
+        <MailCheck className="w-16 h-16 mx-auto text-[#c5471f] mb-4" />
+        <h1 className="text-2xl font-bold text-[#012136] mb-2">Verifica la tua email</h1>
+        <p className="text-[#012136]/68 mb-6">
+          Abbiamo inviato un link di verifica a <strong>{user.email}</strong>. Controlla la posta in arrivo e la cartella spam per continuare.
         </p>
 
         {message && <p className="p-3 bg-green-100 text-green-700 rounded-md mb-4">{message}</p>}
         {error && <p className="p-3 bg-red-100 text-red-700 rounded-md mb-4">{error}</p>}
         
-        <p className="text-sm text-gray-500 mb-6">
-          This page will automatically redirect after you verify your email.
+        <p className="text-sm text-[#012136]/55 mb-6">
+          Questa pagina ti reindirizzerà automaticamente dopo la verifica.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={handleResendEmail}
             disabled={resendLoading}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+            className="bg-[#012136] text-white px-6 py-2 rounded-lg font-medium hover:bg-[#0a6f6a] transition-colors disabled:opacity-50"
           >
-            {resendLoading ? 'Sending...' : 'Resend Email'}
+            {resendLoading ? 'Invio...' : 'Invia di nuovo'}
           </button>
           <button
             onClick={signOut}
-            className="text-gray-600 hover:text-black transition-colors"
+            className="text-[#012136]/65 hover:text-[#012136] transition-colors"
           >
-            Sign Out
+            Esci
           </button>
         </div>
       </div>

@@ -1,18 +1,22 @@
-import {db } from "@/app/lib/firebase"
-import { doc, getDoc } from "firebase/firestore";
-export function getProductPrice(productId){
+import admin from 'firebase-admin';
 
+function getAdminDb() {
+  if (!admin.apps.length) {
+    admin.initializeApp({
+      credential: admin.credential.applicationDefault(),
+    });
+  }
 
-    async function fetchProductPriceFromDB(productId) {
-        const productRef = doc(db, "shop", productId);
-        const productSnap = await getDoc(productRef);
+  return admin.firestore();
+}
 
-        if (productSnap.exists()) {
-            return productSnap.data().price;
-        } else {
-            throw new Error("Product not found");
-        }
-    }
+export async function getProductPrice(productId) {
+  const productRef = getAdminDb().collection('shop').doc(productId);
+  const productSnap = await productRef.get();
 
-    return fetchProductPriceFromDB(productId);
+  if (!productSnap.exists) {
+    throw new Error('Product not found');
+  }
+
+  return productSnap.data().price;
 }

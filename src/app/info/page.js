@@ -1,206 +1,153 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin, Calendar, Music, Heart, Users, Utensils } from 'lucide-react';
-
-const artists = [
-  {
-    date: 'Venerd\u00ec 19 Settembre',
-    startTime: '19:00',
-    acts: [
-      { name: 'Emilya Ndme', origin: 'Genova', genre: 'Synth/Post Punk', stage: 'Mainstage' },
-      { name: 'Duck Baleno', origin: 'Verona', genre: 'Psychedelic', stage: 'Mainstage' },
-      { name: 'Alex Fernet', origin: 'Vicenza', genre: 'Synth Pop/Nu Boogie', stage: 'Mainstage' },
-      { name: 'Vera Moro', origin: 'Bruxelles', genre: 'DJ Set', stage: 'Bunker Room' },
-    ],
-  },
-  {
-    date: 'Sabato 20 Settembre',
-    startTime: '19:00',
-    acts: [
-      { name: 'Sn\u00fcff', origin: 'Padova', genre: 'Garage/RnR', stage: 'Mainstage' },
-      { name: 'Plastic Palm', origin: 'NYC/Torino', genre: 'Indie Garage', stage: 'Mainstage' },
-      { name: 'Hearts Apart', origin: 'Vicenza', genre: 'Punk Rock', stage: 'Mainstage' },
-      { name: 'Ritmica', origin: 'Verona', genre: 'DJ Set', stage: 'Bunker Room' },
-    ],
-  },
-  {
-    date: 'Domenica 21 Settembre',
-    startTime: '16:00',
-    acts: [
-      { name: 'La Para', origin: 'Bologna', genre: 'Pop Lo-fi', stage: 'Mainstage' },
-      { name: 'Le Altre di B', origin: 'Bologna', genre: 'Indie-Alternative', stage: 'Mainstage' },
-    ],
-  },
-];
-
-const organizers = [
-  'One Bridge To',
-  'RedLab',
-  'Osteria ai Preti',
-  'Santa Maria Craft Pub',
-];
+import { Calendar, ExternalLink, HeartHandshake, MapPin, Ticket, Users } from 'lucide-react';
+import { eventContent } from '@/app/lib/eventContent';
 
 export default function InfoPage() {
   return (
-    <div className="min-h-screen pb-20">
-      {/* Hero Section */}
-      <section className="relative flex flex-col items-center justify-center text-center px-6 pt-16 pb-12">
-        <h1 className="font-cuanky text-5xl md:text-7xl mb-4">Holy Festival 2025</h1>
-        <p className="text-lg md:text-xl text-gray-400 max-w-2xl">
-          Terza edizione del Festival della Madonna a Forte Sofia, Verona.
-          Tre serate di musica, cibo e comunit&agrave; per una causa umanitaria.
+    <main className="min-h-screen pb-20">
+      <section className="mx-auto flex max-w-5xl flex-col items-center px-6 pb-12 pt-14 text-center">
+        <p className="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-[#c5471f]">
+          {eventContent.shortName}
         </p>
-        <div className="flex flex-wrap gap-4 mt-8 justify-center">
-          <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-5 py-2 text-sm text-gray-300">
-            <Calendar className="w-4 h-4" />
-            19 &ndash; 21 Settembre 2025
+        <h1 className="text-5xl font-black leading-tight text-[#012136] md:text-7xl">
+          {eventContent.title}
+        </h1>
+        <p className="mt-5 max-w-3xl text-xl leading-relaxed text-[#012136]/75">
+          {eventContent.tagline}
+        </p>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#012136]/15 bg-white px-5 py-3 text-sm font-semibold text-[#012136] shadow-sm">
+            <Calendar className="h-4 w-4 text-[#c5471f]" />
+            {eventContent.dateRange}
+          </span>
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#012136]/15 bg-white px-5 py-3 text-sm font-semibold text-[#012136] shadow-sm">
+            <MapPin className="h-4 w-4 text-[#0a6f6a]" />
+            {eventContent.location}
+          </span>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-5xl px-6 py-8">
+        <div className="rounded-lg border border-[#012136]/12 bg-white p-6 shadow-sm md:p-8">
+          <div className="mb-4 flex items-center gap-3">
+            <HeartHandshake className="h-6 w-6 text-[#c5471f]" />
+            <h2 className="text-2xl font-black text-[#012136]">Il senso della GMR 2026</h2>
           </div>
-          <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-5 py-2 text-sm text-gray-300">
-            <MapPin className="w-4 h-4" />
-            Forte Sofia, Verona
+          <div className="space-y-4 leading-relaxed text-[#012136]/76">
+            <p>
+              Marzo 2016, Idomeni. La frontiera tra Grecia e Macedonia del Nord si chiude
+              e migliaia di persone restano bloccate in un campo improvvisato. Da lì nasce
+              One Bridge To-, dieci anni fa.
+            </p>
+            <p>
+              La Giornata Mondiale del Rifugiato 2026 attraversa questa memoria con cinema,
+              teatro, dialoghi, laboratori e incontri. Il programma si muove tra Forte Sofia,
+              Community Center Verona, Università di Verona e altri luoghi della città.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Mission */}
-      <section className="max-w-4xl mx-auto px-6 py-12">
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-8 md:p-10">
-          <div className="flex items-center gap-3 mb-4">
-            <Heart className="w-6 h-6 text-red-400" />
-            <h2 className="text-2xl font-bold">La Nostra Missione</h2>
+      <section className="mx-auto max-w-6xl px-6 py-10">
+        <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#c5471f]">Programma</p>
+            <h2 className="mt-2 text-3xl font-black text-[#012136]">Appuntamenti principali</h2>
           </div>
-          <p className="text-gray-400 leading-relaxed">
-            Il ricavato di tutte e tre le serate va a sostegno di una clinica e di un centro comunitario
-            all&apos;interno del campo profughi di Bajed Kandala, nel Kurdistan iracheno. Holy Festival
-            unisce organizzazioni locali, artisti e pubblico per una causa solidale, mescolando musica,
-            buon cibo e spirito di comunit&agrave;.
-          </p>
-        </div>
-      </section>
-
-      {/* Line-up */}
-      <section className="max-w-5xl mx-auto px-6 py-12">
-        <div className="flex items-center gap-3 mb-8">
-          <Music className="w-6 h-6 text-indigo-400" />
-          <h2 className="text-3xl font-bold">Line-up</h2>
+          <Link
+            href={eventContent.sourceUrl}
+            target="_blank"
+            className="inline-flex items-center gap-2 rounded-full border border-[#012136]/18 bg-white px-4 py-2 text-sm font-bold text-[#012136] transition-colors hover:bg-[#012136]/8"
+          >
+            Fonte One Bridge To-
+            <ExternalLink className="h-4 w-4" />
+          </Link>
         </div>
 
-        <div className="space-y-8">
-          {artists.map((day) => (
-            <div key={day.date} className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-              <div className="bg-white/5 px-6 py-4 border-b border-white/10 flex items-center justify-between">
-                <h3 className="text-xl font-bold">{day.date}</h3>
-                <span className="text-sm text-gray-400">dalle {day.startTime}</span>
+        <div className="grid gap-4 md:grid-cols-2">
+          {eventContent.program.map((day) => (
+            <article key={day.date} className="rounded-lg border border-[#012136]/12 bg-white p-6 shadow-sm">
+              <div className="flex flex-col gap-3 border-b border-[#012136]/10 pb-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h3 className="text-xl font-black text-[#012136]">{day.date}</h3>
+                  <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-[#c5471f]">
+                    <MapPin className="h-4 w-4" />
+                    {day.place}
+                  </p>
+                </div>
               </div>
-              <div className="divide-y divide-white/5">
-                {day.acts.map((act) => (
-                  <div key={act.name} className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div>
-                      <p className="font-semibold text-lg">{act.name}</p>
-                      <p className="text-sm text-gray-400">{act.origin} &middot; {act.genre}</p>
-                    </div>
-                    <span className={`text-xs px-3 py-1 rounded-full self-start sm:self-auto ${
-                      act.stage === 'Mainstage'
-                        ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
-                        : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                    }`}>
-                      {act.stage}
-                    </span>
-                  </div>
+              <ul className="mt-5 space-y-3">
+                {day.items.map((item) => (
+                  <li key={item} className="rounded-md bg-[#f6f2e8] px-4 py-3 text-sm font-semibold text-[#012136]">
+                    {item}
+                  </li>
                 ))}
-              </div>
-            </div>
+              </ul>
+              <p className="mt-4 text-sm leading-relaxed text-[#012136]/68">{day.note}</p>
+            </article>
           ))}
         </div>
       </section>
 
-      {/* Biglietti */}
-      <section className="max-w-4xl mx-auto px-6 py-12">
-        <h2 className="text-3xl font-bold mb-6">Biglietti</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center">
-            <p className="text-gray-400 text-sm mb-2">Ingresso singola serata</p>
-            <p className="text-4xl font-bold mb-4">&euro;10</p>
-            <Link
-              href="/shop"
-              className="inline-block bg-white text-black px-6 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors"
-            >
-              Acquista
-            </Link>
+      <section className="mx-auto grid max-w-6xl gap-4 px-6 py-10 md:grid-cols-2">
+        <div className="rounded-lg border border-[#012136]/12 bg-[#012136] p-7 text-white shadow-sm">
+          <div className="mb-4 flex items-center gap-3">
+            <Users className="h-6 w-6 text-[#f1b84b]" />
+            <h2 className="text-2xl font-black">Partecipa come volontariə</h2>
           </div>
-          <div className="bg-indigo-500/10 border border-indigo-500/30 rounded-2xl p-6 text-center">
-            <p className="text-indigo-300 text-sm mb-2">Abbonamento 3 serate</p>
-            <p className="text-4xl font-bold mb-4">&euro;20</p>
-            <Link
-              href="/shop"
-              className="inline-block bg-indigo-500 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-indigo-600 transition-colors"
-            >
-              Acquista
-            </Link>
+          <p className="leading-relaxed text-white/78">
+            Servono persone per allestimenti, accoglienza, bar, cucina, gestione degli spazi
+            e smontaggio. Anche poche ore aiutano.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {eventContent.volunteerRoles.map((role) => (
+              <span key={role} className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.08em]">
+                {role}
+              </span>
+            ))}
           </div>
+          <Link
+            href={eventContent.volunteerUrl}
+            target="_blank"
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 font-bold text-[#012136] transition-colors hover:bg-[#f1b84b]"
+          >
+            Compila il modulo
+            <ExternalLink className="h-4 w-4" />
+          </Link>
+        </div>
+
+        <div className="rounded-lg border border-[#012136]/12 bg-white p-7 shadow-sm">
+          <div className="mb-4 flex items-center gap-3">
+            <Ticket className="h-6 w-6 text-[#c5471f]" />
+            <h2 className="text-2xl font-black text-[#012136]">Biglietti e prenotazioni</h2>
+          </div>
+          <p className="leading-relaxed text-[#012136]/72">
+            Gli appuntamenti indicati come su prenotazione avranno link dedicati. Per gli ingressi
+            disponibili nello shop, l’app mantiene carrello, checkout Stripe e QR code nell’area
+            biglietti.
+          </p>
+          <Link
+            href="/shop"
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#c5471f] px-5 py-3 font-bold text-white transition-colors hover:bg-[#8f2f18]"
+          >
+            Vai allo shop
+            <Ticket className="h-4 w-4" />
+          </Link>
         </div>
       </section>
 
-      {/* Info pratiche */}
-      <section className="max-w-4xl mx-auto px-6 py-12">
-        <h2 className="text-3xl font-bold mb-6">Info Pratiche</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-            <div className="flex items-center gap-2 mb-3">
-              <MapPin className="w-5 h-5 text-gray-400" />
-              <h3 className="font-semibold">Come Arrivare</h3>
-            </div>
-            <p className="text-gray-400 text-sm leading-relaxed">
-              Forte Sofia, Via Monte Novegno, Verona (accesso da Via San Leonardo).
-              Raggiungibile a piedi, in bici o in auto. Parcheggio gratuito ma limitato.
-            </p>
-          </div>
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-            <div className="flex items-center gap-2 mb-3">
-              <Utensils className="w-5 h-5 text-gray-400" />
-              <h3 className="font-semibold">Cibo &amp; Bevande</h3>
-            </div>
-            <p className="text-gray-400 text-sm leading-relaxed">
-              Ogni sera sar&agrave; disponibile la cena in loco a cura di Osteria Nosetta.
-            </p>
-          </div>
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-            <div className="flex items-center gap-2 mb-3">
-              <Calendar className="w-5 h-5 text-gray-400" />
-              <h3 className="font-semibold">Orari</h3>
-            </div>
-            <p className="text-gray-400 text-sm leading-relaxed">
-              Venerd&igrave; e Sabato dalle 19:00. Domenica dalle 16:00.
-            </p>
-          </div>
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-            <div className="flex items-center gap-2 mb-3">
-              <Users className="w-5 h-5 text-gray-400" />
-              <h3 className="font-semibold">Trasporto Pubblico</h3>
-            </div>
-            <p className="text-gray-400 text-sm leading-relaxed">
-              Linee bus per Ospedale Maggiore. Linea serale 85.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Organizzatori */}
-      <section className="max-w-4xl mx-auto px-6 py-12 text-center">
-        <h2 className="text-3xl font-bold mb-6">Organizzato da</h2>
-        <div className="flex flex-wrap gap-4 justify-center">
-          {organizers.map((org) => (
-            <span
-              key={org}
-              className="bg-white/5 border border-white/10 rounded-full px-5 py-2 text-sm text-gray-300"
-            >
-              {org}
-            </span>
+      <section className="mx-auto max-w-6xl px-6 py-8">
+        <div className="grid gap-4 md:grid-cols-4">
+          {eventContent.practicalInfo.map((item) => (
+            <article key={item.title} className="rounded-lg border border-[#012136]/12 bg-white p-5 shadow-sm">
+              <h3 className="font-black text-[#012136]">{item.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-[#012136]/68">{item.text}</p>
+            </article>
           ))}
         </div>
       </section>
-    </div>
+    </main>
   );
 }

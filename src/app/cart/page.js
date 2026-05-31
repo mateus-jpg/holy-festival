@@ -1,12 +1,10 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AppConfig } from '@/app/lib/config';
-import { Aoboshi_One } from 'next/font/google';
-import App from 'next/app';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Cart() {
@@ -37,6 +35,7 @@ export default function Cart() {
     const updateCart = (updatedCart) => {
         setCart(updatedCart);
         localStorage.setItem('cart', JSON.stringify(updatedCart));
+        window.dispatchEvent(new Event('cart-updated'));
     };
 
     const updateQuantity = (productId, newQuantity) => {
@@ -64,7 +63,7 @@ export default function Cart() {
     // Total of only "withFee" items
     const getSubtotalWithFees = () => {
         return cart
-            .filter(item => "withFee" in item && item.withFee)
+            .filter(item => item.withFee || item.withFees)
             .reduce((total, item) => total + (item.price * item.quantity), 0);
     };
 
@@ -105,36 +104,39 @@ export default function Cart() {
 
     if (loading) {
         return (
-            <div className="h-100% flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center">
                 <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-foreground"></div>
             </div>
         );
     }
 
     return (
-        <div className="h-100% bg-background text-foreground">
+        <div className="min-h-screen bg-background text-foreground">
             {/* Header */}
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="flex justify-between items-center h-16">
-                    <h1 className=" font-cuanky text-3xl font-bold mb-8">Carrello</h1>
+            <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+                <div className="mb-8 flex items-center justify-between gap-4">
+                    <div>
+                        <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#c5471f]">GMR 2026</p>
+                        <h1 className="text-4xl font-black text-[#012136]">Carrello</h1>
+                    </div>
                     <Link
                         href="/shop"
-                        className=" text-sm hover:underline hover:underline-offset-4 mb-8"
+                        className="rounded-full border border-[#012136]/18 bg-white px-4 py-2 text-sm font-bold text-[#012136] transition-colors hover:bg-[#012136]/8"
                     >
-                        Continua lo Shopping
+                        Continua
                     </Link>
                 </div>
                 {cart.length === 0 ? (
-                    <div className="text-center py-12">
-                        <p className="text-lg text-gray-400 mb-4">
+                    <div className="rounded-lg border border-[#012136]/12 bg-white px-6 py-12 text-center shadow-sm">
+                        <p className="mb-4 text-lg text-[#012136]/65">
                             Il tuo carrello è vuoto
                         </p>
                         <Link
                             href="/shop"
-                            className="bg-foreground text-background px-6 py-3 rounded-full hover:bg-[#ccc] transition-colors inline-block"
+                            className="inline-block rounded-full bg-[#012136] px-6 py-3 font-bold text-white transition-colors hover:bg-[#0a6f6a]"
                         >
-                            Inizia lo Shopping
+                            Vai ai biglietti
                         </Link>
                     </div>
                 ) : (
@@ -145,10 +147,10 @@ export default function Cart() {
                                 {cart.map((item) => (
                                     <div
                                         key={item.id}
-                                        className="border border-white/[.145] rounded-lg p-4 flex items-center gap-4"
+                                        className="flex items-center gap-4 rounded-lg border border-[#012136]/12 bg-white p-4 shadow-sm"
                                     >
                                         {/* Product Image */}
-                                        <div className="w-20 h-20 relative bg-gray-800 rounded-lg flex-shrink-0">
+                                        <div className="relative h-20 w-20 flex-shrink-0 rounded-lg bg-[#012136]/8">
                                             {item.imgUrl ? (
                                                 <Image
                                                     src={item.imgUrl}
@@ -157,7 +159,7 @@ export default function Cart() {
                                                     className="object-cover rounded-lg"
                                                 />
                                             ) : (
-                                                <div className="flex items-center justify-center h-full text-gray-400 text-xs">
+                                                <div className="flex h-full items-center justify-center text-xs text-[#012136]/45">
                                                     Nessuna Immagine
                                                 </div>
                                             )}
@@ -166,7 +168,7 @@ export default function Cart() {
                                         {/* Product Details */}
                                         <div className="flex-grow">
                                             <h3 className="font-semibold text-lg">{item.name}</h3>
-                                            <p className="text-sm text-gray-400">
+                                            <p className="text-sm text-[#012136]/62">
                                                 {item.price?.toFixed(2) || '0.00'}€ l'uno
                                             </p>
                                         </div>
@@ -175,14 +177,14 @@ export default function Cart() {
                                         <div className="flex items-center gap-2">
                                             <button
                                                 onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                                className="w-8 h-8 rounded-full border :border-white/[.145] hover:bg-[#1a1a1a]  transition-colors flex items-center justify-center"
+                                                className="flex h-8 w-8 items-center justify-center rounded-full border border-[#012136]/18 transition-colors hover:bg-[#012136]/8"
                                             >
                                                 −
                                             </button>
                                             <span className="w-8 text-center">{item.quantity}</span>
                                             <button
                                                 onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                className="w-8 h-8 rounded-full border border-white/[.145] hover:bg-[#1a1a1a]  transition-colors flex items-center justify-center"
+                                                className="flex h-8 w-8 items-center justify-center rounded-full border border-[#012136]/18 transition-colors hover:bg-[#012136]/8"
                                             >
                                                 +
                                             </button>
@@ -195,7 +197,7 @@ export default function Cart() {
                                             </p>
                                             <button
                                                 onClick={() => removeFromCart(item.id)}
-                                                className="text-red-500 text-sm hover:underline mt-1"
+                                                className="mt-1 text-sm font-semibold text-[#8f2f18] hover:underline"
                                             >
                                                 Rimuovi
                                             </button>
@@ -208,7 +210,7 @@ export default function Cart() {
 
                         {/* Order Summary */}
                         <div className="lg:col-span-1">
-                            <div className="border border-white/[.145]  rounded-lg p-6 sticky top-4">
+                            <div className="sticky top-24 rounded-lg border border-[#012136]/12 bg-white p-6 shadow-sm">
                                 <h2 className="text-xl font-semibold mb-4">Riepilogo Ordine</h2>
 
                                 <div className="space-y-2 mb-4">
@@ -220,7 +222,7 @@ export default function Cart() {
                                         <span>Commissioni</span>
                                         <span>{getFees().toFixed(2)}€</span>
                                     </div>
-                                    <div className="border-t border-white/[.145]  pt-2">
+                                    <div className="border-t border-[#012136]/12 pt-2">
                                         <div className="flex justify-between font-semibold text-lg">
                                             <span>Totale</span>
                                             <span>{getTotal().toFixed(2)}€</span>
@@ -230,21 +232,21 @@ export default function Cart() {
 
                                 {canCheckout ? <button
                                     onClick={handleCheckout}
-                                    className="w-full bg-foreground text-background py-3 rounded-full font-medium hover:bg-[#ccc] transition-colors"
+                                    className="w-full rounded-full bg-[#c5471f] py-3 font-bold text-white transition-colors hover:bg-[#8f2f18]"
                                 >
                                     Procedi al Checkout
                                 </button> : 
-                                <div className="text-sm text-red-500">
-                                    Per procedere al checkout, fail ilcompleta il tuo profilo con nome e cognome.
+                                <div className="rounded-lg border border-[#c5471f]/25 bg-[#c5471f]/10 p-3 text-sm font-semibold text-[#8f2f18]">
+                                    Per procedere al checkout, completa il profilo con nome e cognome.
                                 </div>
                                 }
                                 {/* Continue Shopping Link */}
 
                                 <Link
                                     href="/shop"
-                                    className="block text-center text-sm hover:underline hover:underline-offset-4 mt-4"
+                                    className="mt-4 block text-center text-sm font-semibold text-[#012136] hover:underline hover:underline-offset-4"
                                 >
-                                    Continua lo Shopping
+                                    Continua con i biglietti
                                 </Link>
                             </div>
                         </div>

@@ -10,9 +10,18 @@ import {
  } from '@/app/api/webhooks/stripe/paymentHandlers'
 // Initialize Firebase Admin SDK
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
 export async function POST(request) {
+  const stripeKey = process.env.STRIPE_SECRET_KEY;
+  const webhookKey = process.env.STRIPE_WEBHOOK_KEY;
+
+  if (!stripeKey || !webhookKey) {
+    return NextResponse.json(
+      { error: 'Stripe webhook configuration error' },
+      { status: 500 }
+    );
+  }
+
+  const stripe = new Stripe(stripeKey);
   const body = await request.text();
   
   const headersList = await headers();
@@ -26,7 +35,7 @@ export async function POST(request) {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_KEY
+      webhookKey
     );
   } catch (err) {
     console.error('Webhook signature verification failed:', err.message);

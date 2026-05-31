@@ -7,15 +7,6 @@ const nextConfig = {
             'firebasestorage.googleapis.com'
         ],
     },
-    async redirects() {
-        return [
-            {
-                source: '/',
-                destination: '/shop',
-                permanent: true,
-            },
-        ];
-    },
 };
 
 export default nextConfig;

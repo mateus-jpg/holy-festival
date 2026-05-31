@@ -51,17 +51,17 @@ export function CompletionPageInner() {
   if (status === 'success') {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
-        <h1 className="text-3xl font-bold text-green-600 mb-4">
-          Pagamento Riuscito!
+        <h1 className="text-3xl font-bold text-[#0a6f6a] mb-4">
+          Pagamento riuscito
         </h1>
-        <p className="text-gray-300 mb-6">
+        <p className="text-[#012136]/70 mb-6">
           Grazie per il tuo ordine. Una conferma è stata inviata alla tua email.
         </p>
         <Link
-          href="/shop"
-          className="bg-foreground text-background px-6 py-2 rounded-full"
+          href="/tickets"
+          className="bg-[#012136] text-white px-6 py-2 rounded-full"
         >
-          Continua lo Shopping
+          Vai ai biglietti
         </Link>
       </div>
     );
@@ -70,13 +70,13 @@ export function CompletionPageInner() {
   if (status === 'error') {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
-        <h1 className="text-3xl font-bold text-red-500 mb-4">
-          Pagamento non Riuscito
+        <h1 className="text-3xl font-bold text-[#8f2f18] mb-4">
+          Pagamento non riuscito
         </h1>
-        <p className="text-gray-400 mb-6">{error}</p>
+        <p className="text-[#012136]/70 mb-6">{error}</p>
         <Link
           href="/cart"
-          className="bg-foreground text-background px-6 py-2 rounded-full"
+          className="bg-[#012136] text-white px-6 py-2 rounded-full"
         >
           Torna al Carrello
         </Link>

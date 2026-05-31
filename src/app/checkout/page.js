@@ -7,6 +7,7 @@ import { stripePromise } from '@/app/lib/stripe';
 import CheckoutForm from '@/app/components/CheckoutForm';
 import { AppConfig } from '@/app/lib/config';
 import { useAuth } from '@/app/contexts/AuthContext';
+import { AlertTriangle } from 'lucide-react';
 
 // Create payment intent and save initial order
 async function createPaymentIntentAndOrder(cart, user) {
@@ -16,7 +17,7 @@ async function createPaymentIntentAndOrder(cart, user) {
 
   const getSubtotalWithFees = () => {
     return cart
-      .filter((item) => 'withFees' in item && item.withFees)
+      .filter((item) => item.withFees || item.withFee)
       .reduce((total, item) => total + item.price * item.quantity, 0);
   };
 
@@ -195,8 +196,8 @@ export default function CheckoutPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-          <p className="text-gray-400">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#c5471f] mb-4"></div>
+          <p className="text-[#012136]/65">
             Preparazione del checkout sicuro in corso...
           </p>
         </div>
@@ -208,15 +209,15 @@ export default function CheckoutPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
         <div className="max-w-md">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-red-500 mb-4">
+          <AlertTriangle className="mx-auto mb-4 h-14 w-14 text-[#8f2f18]" />
+          <h2 className="text-2xl font-bold text-[#8f2f18] mb-4">
             Errore nel Checkout
           </h2>
-          <p className="text-gray-400 mb-6">{error}</p>
+          <p className="text-[#012136]/65 mb-6">{error}</p>
           <div className="space-y-3">
             <a
               href="/cart"
-              className="block bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors"
+              className="block bg-[#012136] hover:bg-[#0a6f6a] text-white px-6 py-3 rounded-lg transition-colors"
             >
               Torna al Carrello
             </a>
@@ -236,12 +237,12 @@ export default function CheckoutPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
         <h2 className="text-2xl font-bold mb-4">Autenticazione Richiesta</h2>
-        <p className="text-gray-400 mb-6">
+        <p className="text-[#012136]/65 mb-6">
           Accedi per continuare con il checkout.
         </p>
         <a
-          href="/login"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors"
+          href="/auth"
+          className="bg-[#012136] hover:bg-[#0a6f6a] text-white px-6 py-3 rounded-lg transition-colors"
         >
           Accedi
         </a>
@@ -254,9 +255,9 @@ export default function CheckoutPage() {
     appearance: {
       theme: 'stripe',
       variables: {
-        colorPrimary: '#2563eb',
+        colorPrimary: '#C5471F',
         colorBackground: '#ffffff',
-        colorText: '#1f2937',
+        colorText: '#012136',
         fontFamily: 'system-ui, sans-serif',
         borderRadius: '8px',
       },
@@ -264,18 +265,18 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex justify-center items-center p-4">
-      <div className="w-full max-w-md bg-[#1a1a1a] rounded-xl shadow-lg p-8">
+    <div className="min-h-screen bg-background flex justify-center items-center p-4">
+      <div className="w-full max-w-md rounded-lg border border-[#012136]/12 bg-white p-8 shadow-sm">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold mb-2">Checkout Sicuro</h1>
-          <p className="text-gray-400 text-sm">
+          <h1 className="text-2xl font-bold mb-2 text-[#012136]">Checkout sicuro</h1>
+          <p className="text-[#012136]/65 text-sm">
             Completa il tuo pagamento in sicurezza con Stripe
           </p>
         </div>
 
         {/* Order Summary */}
-        <div className="mb-6 p-4 bg-gray-800 rounded-lg">
-          <h3 className="font-semibold mb-2">Riepilogo Ordine</h3>
+        <div className="mb-6 p-4 bg-[#f6f2e8] rounded-lg text-[#012136]">
+          <h3 className="font-semibold mb-2">Riepilogo ordine</h3>
           <div className="space-y-1 text-sm">
             {cart.map((item, index) => (
               <div key={index} className="flex justify-between">

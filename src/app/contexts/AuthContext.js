@@ -31,6 +31,12 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!auth || !db) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       try {
         if (firebaseUser) {
@@ -84,6 +90,10 @@ export const AuthProvider = ({ children }) => {
 
   // Fixed Google Sign In with popup
   const signInWithGoogle = useCallback(async () => {
+    if (!auth || !googleProvider) {
+      throw new Error('Firebase is not configured.');
+    }
+
     try {
       const result = await signInWithPopup(auth, googleProvider);
       return result;
@@ -94,6 +104,10 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const signInWithEmail = useCallback(async (email, password) => {
+    if (!auth) {
+      throw new Error('Firebase is not configured.');
+    }
+
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       return result;
@@ -104,6 +118,10 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const signUpWithEmail = useCallback(async (email, password) => {
+    if (!auth) {
+      throw new Error('Firebase is not configured.');
+    }
+
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       
@@ -120,6 +138,11 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const signOut = useCallback(async () => {
+    if (!auth) {
+      setUser(null);
+      return;
+    }
+
     try {
       await firebaseSignOut(auth);
     } catch (error) {
@@ -129,6 +152,10 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const sendPasswordResetEmail = useCallback(async (email) => {
+    if (!auth) {
+      throw new Error('Firebase is not configured.');
+    }
+
     try {
       await firebaseSendPasswordResetEmail(auth, email);
     } catch (error) {
@@ -138,6 +165,10 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const resendVerificationEmail = useCallback(async () => {
+    if (!auth) {
+      throw new Error('Firebase is not configured.');
+    }
+
     if (auth.currentUser) {
       try {
         await sendEmailVerification(auth.currentUser);
@@ -152,6 +183,9 @@ export const AuthProvider = ({ children }) => {
 
   const updateUserProfile = useCallback(async (profile) => {
     if (!user) return;
+    if (!db) {
+      throw new Error('Firebase is not configured.');
+    }
 
     try {
       const updatedData = {

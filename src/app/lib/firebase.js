@@ -11,11 +11,22 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+const hasValue = (value) => Boolean(value && !value.startsWith('REPLACE_WITH_'));
 
-export const googleProvider = new GoogleAuthProvider();
-export const facebookProvider = new FacebookAuthProvider();
+const hasFirebaseConfig = Boolean(
+  hasValue(firebaseConfig.apiKey) &&
+  hasValue(firebaseConfig.authDomain) &&
+  hasValue(firebaseConfig.projectId) &&
+  hasValue(firebaseConfig.appId)
+);
+
+export const isFirebaseConfigured = hasFirebaseConfig;
+
+const app = hasFirebaseConfig ? initializeApp(firebaseConfig) : null;
+export const auth = app ? getAuth(app) : null;
+export const db = app ? getFirestore(app) : null;
+
+export const googleProvider = app ? new GoogleAuthProvider() : null;
+export const facebookProvider = app ? new FacebookAuthProvider() : null;
 
 export default app;

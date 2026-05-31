@@ -53,11 +53,11 @@ export default function Tickets() {
         };
       case 'upcoming':
         return {
-          badgeBg: 'bg-blue-500/80',
+          badgeBg: 'bg-[#0a6f6a]/80',
           badgeText: 'In Arrivo',
           icon: CalendarUpcoming,
-          borderColor: 'border-blue-400/30',
-          bgHover: 'hover:bg-blue-500/10'
+          borderColor: 'border-[#0a6f6a]/30',
+          bgHover: 'hover:bg-[#0a6f6a]/10'
         };
       case 'expired':
         return {
@@ -217,8 +217,8 @@ export default function Tickets() {
               onClick={() => setStatusFilter('upcoming')}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
                 statusFilter === 'upcoming'
-                  ? 'bg-blue-500/20 text-blue-300 border border-blue-400/30'
-                  : 'bg-white/10 text-white/80 hover:bg-blue-500/10'
+                  ? 'bg-[#0a6f6a]/20 text-[#7bd3ca] border border-[#0a6f6a]/30'
+                  : 'bg-white/10 text-white/80 hover:bg-[#0a6f6a]/10'
               }`}
             >
               <CalendarUpcoming className="w-4 h-4" />
@@ -320,7 +320,7 @@ export default function Tickets() {
                     {/* Admin indicator if viewing all tickets */}
                     {user.isAdmin && ticket.userId !== user.uid && (
                       <div className="absolute top-3 left-3">
-                        <span className="bg-blue-500/80 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs font-medium">
+                        <span className="bg-[#0a6f6a]/80 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs font-medium">
                           Utente
                         </span>
                       </div>
@@ -366,7 +366,7 @@ export default function Tickets() {
 
                       {/* Validity period for upcoming tickets */}
                       {status === 'upcoming' && ticket.validFrom && (
-                        <div className="flex items-center text-blue-300">
+                        <div className="flex items-center text-[#7bd3ca]">
                           <CalendarUpcoming className="w-4 h-4 mr-2" />
                           <span className="text-xs">
                             Valido dal {formatDate(ticket.validFrom)}
@@ -409,9 +409,9 @@ export default function Tickets() {
                       href={`/tickets/${ticket.id}`}
                       className={`block w-full font-medium py-3 px-4 rounded-xl text-center transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl ${
                         status === 'valid'
-                          ? 'bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white'
+                          ? 'bg-[#012136] hover:bg-[#0a6f6a] text-white'
                           : status === 'upcoming'
-                          ? 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'
+                          ? 'bg-[#0a6f6a] hover:bg-[#075652] text-white'
                           : status === 'expired'
                           ? 'bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white'
                           : 'bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white'

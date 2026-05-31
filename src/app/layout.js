@@ -25,15 +25,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Holy Festival 2025",
-  description: "Holy festival 2025",
+  title: "GMR 2026 | One Bridge To-",
+  description: "Giornata Mondiale del Rifugiato 2026 a Verona, a cura di One Bridge To-.",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="it">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${cuankyFont.variable} ${promptRegular.className} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${cuankyFont.variable} ${promptRegular.variable} ${promptRegular.className} antialiased`}
       >
         <AuthProvider>
             <Navbar/>

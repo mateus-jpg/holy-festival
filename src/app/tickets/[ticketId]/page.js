@@ -77,11 +77,11 @@ export default function SingleTicket() {
         };
       case 'upcoming':
         return {
-          qrBg: 'bg-blue-600',
-          qrColor: '#2563eb',
-          statusBadge: 'bg-blue-500/90',
+          qrBg: 'bg-[#0a6f6a]',
+          qrColor: '#0a6f6a',
+          statusBadge: 'bg-[#0a6f6a]/90',
           statusText: 'In Arrivo',
-          borderColor: 'border-blue-400/50'
+          borderColor: 'border-[#0a6f6a]/50'
         };
       case 'expired':
         return {
@@ -402,7 +402,9 @@ export default function SingleTicket() {
     });
   };
 
-  const qrCodeUrl = `https://holy-festival.onebridgeto.com/tickets/${ticketId}`;
+  const qrCodeUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/tickets/${ticketId}`
+    : `https://www.onebridgeto.com/tickets/${ticketId}`;
 
   if (loading) {
     return (
@@ -427,7 +429,7 @@ export default function SingleTicket() {
           <p className="text-white/80 mb-6">{error}</p>
           <Link
             href="/tickets"
-            className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-medium py-3 px-6 rounded-xl transition-all duration-300"
+            className="bg-[#012136] hover:bg-[#0a6f6a] text-white font-medium py-3 px-6 rounded-xl transition-all duration-300"
           >
             Torna ai Biglietti
           </Link>
@@ -484,7 +486,7 @@ export default function SingleTicket() {
 
             {/* Date validation warning for admins */}
             {user.isAdmin && status === 'upcoming' && (
-              <div className="absolute top-16 right-4 bg-blue-500/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs">
+              <div className="absolute top-16 right-4 bg-[#0a6f6a]/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs">
                 Non ancora valido
               </div>
             )}
@@ -526,7 +528,7 @@ export default function SingleTicket() {
                     <div>
                       <label className="block text-sm font-medium text-white/80 mb-1">Valido Da</label>
                       <p className={`text-white p-3 rounded-lg ${
-                        status === 'upcoming' ? 'bg-blue-500/20' : 
+                        status === 'upcoming' ? 'bg-[#0a6f6a]/20' : 
                         status === 'expired' ? 'bg-orange-500/20' : 'bg-white/10'
                       }`}>
                         {formatDate(ticket.validFrom)}
@@ -538,7 +540,7 @@ export default function SingleTicket() {
                     <div>
                       <label className="block text-sm font-medium text-white/80 mb-1">Valido Fino</label>
                       <p className={`text-white p-3 rounded-lg ${
-                        status === 'upcoming' ? 'bg-blue-500/20' : 
+                        status === 'upcoming' ? 'bg-[#0a6f6a]/20' : 
                         status === 'expired' ? 'bg-orange-500/20' : 'bg-white/10'
                       }`}>
                         {formatDate(ticket.validUntil)}
@@ -605,7 +607,7 @@ export default function SingleTicket() {
                 {/* Status indicator text */}
                 <div className={`p-3 rounded-lg text-center mb-4 ${
                   status === 'valid' ? 'bg-green-500/20 text-green-300' :
-                  status === 'upcoming' ? 'bg-blue-500/20 text-blue-300' :
+                  status === 'upcoming' ? 'bg-[#0a6f6a]/20 text-[#7bd3ca]' :
                   status === 'expired' ? 'bg-orange-500/20 text-orange-300' :
                   'bg-red-500/20 text-red-300'
                 }`}>
