@@ -3,6 +3,44 @@ import { createUserProducts, updateProductInventory } from '@/app/lib/ticket-ful
 
 const FULFILLMENT_RETRY_AFTER_MS = 5 * 60 * 1000;
 
+function parseMetadataOrderItems(orderItems) {
+    if (!orderItems) {
+        return [];
+    }
+
+    try {
+        const parsedItems = JSON.parse(orderItems);
+        return Array.isArray(parsedItems) ? parsedItems : [];
+    } catch (error) {
+        console.error('Failed to parse order items:', error);
+        return [];
+    }
+}
+
+async function getStoredOrderData(db, paymentIntentId) {
+    const orderDoc = await db.collection('orders').doc(paymentIntentId).get();
+    return orderDoc.exists ? orderDoc.data() : {};
+}
+
+async function getPaymentIntentOrderItems(db, paymentIntent) {
+    const metadataItems = parseMetadataOrderItems(paymentIntent.metadata?.orderItems);
+    if (metadataItems.length > 0) {
+        return metadataItems;
+    }
+
+    const storedOrder = await getStoredOrderData(db, paymentIntent.id);
+    return Array.isArray(storedOrder.items) ? storedOrder.items : [];
+}
+
+function getItemCount(items, fallback) {
+    const parsedFallback = Number.parseInt(fallback || '0', 10);
+    if (Number.isInteger(parsedFallback) && parsedFallback > 0) {
+        return parsedFallback;
+    }
+
+    return items.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+}
+
 export async function handlePaymentIntentSucceeded(paymentIntent) {
     try {
         console.log('Processing successful payment:', paymentIntent.id);
@@ -10,19 +48,16 @@ export async function handlePaymentIntentSucceeded(paymentIntent) {
         const now = admin.firestore.Timestamp.now();
 
         // Extract metadata
-        const { userId, orderItems, itemCount } = paymentIntent.metadata;
+        const { userId, itemCount } = paymentIntent.metadata;
 
-        if (!userId || !orderItems) {
+        if (!userId) {
             console.error('Missing required metadata in payment intent');
             return;
         }
 
-        // Parse order items
-        let parsedItems;
-        try {
-            parsedItems = JSON.parse(orderItems);
-        } catch (error) {
-            console.error('Failed to parse order items:', error);
+        const parsedItems = await getPaymentIntentOrderItems(db, paymentIntent);
+        if (parsedItems.length === 0) {
+            console.error('Missing order items for payment intent', paymentIntent.id);
             return;
         }
 
@@ -43,7 +78,7 @@ export async function handlePaymentIntentSucceeded(paymentIntent) {
 
             // Order items
             items: parsedItems,
-            itemCount: parseInt(itemCount),
+            itemCount: getItemCount(parsedItems, itemCount),
 
             // Timestamps
             createdAt: admin.firestore.Timestamp.fromMillis(paymentIntent.created * 1000),
@@ -132,19 +167,14 @@ export async function handlePaymentIntentFailed(paymentIntent) {
         console.log('Processing failed payment:', paymentIntent.id);
         const db = getAdminDb();
 
-        const { userId, orderItems, itemCount } = paymentIntent.metadata;
+        const { userId, itemCount } = paymentIntent.metadata;
 
         if (!userId) {
             console.error('Missing userId in failed payment metadata');
             return;
         }
 
-        let parsedItems = [];
-        try {
-            parsedItems = JSON.parse(orderItems || '[]');
-        } catch (error) {
-            console.error('Failed to parse order items in failed payment:', error);
-        }
+        const parsedItems = await getPaymentIntentOrderItems(db, paymentIntent);
 
         // Store failed order in same collection with process status
         const failedOrderData = {
@@ -159,7 +189,7 @@ export async function handlePaymentIntentFailed(paymentIntent) {
             amount: paymentIntent.amount,
             currency: paymentIntent.currency.toUpperCase(),
             items: parsedItems,
-            itemCount: parseInt(itemCount || '0'),
+            itemCount: getItemCount(parsedItems, itemCount),
 
             failureReason: paymentIntent.last_payment_error?.message || 'Unknown payment error',
 
@@ -189,19 +219,14 @@ export async function handlePaymentIntentRequiresAction(paymentIntent) {
         console.log('Processing payment that requires action:', paymentIntent.id);
         const db = getAdminDb();
 
-        const { userId, orderItems, itemCount } = paymentIntent.metadata;
+        const { userId, itemCount } = paymentIntent.metadata;
 
         if (!userId) {
             console.error('Missing userId in payment requires action metadata');
             return;
         }
 
-        let parsedItems = [];
-        try {
-            parsedItems = JSON.parse(orderItems || '[]');
-        } catch (error) {
-            console.error('Failed to parse order items in requires action payment:', error);
-        }
+        const parsedItems = await getPaymentIntentOrderItems(db, paymentIntent);
 
         // Get action type from next_action
         const actionType = paymentIntent.next_action?.type || 'unknown';
@@ -220,7 +245,7 @@ export async function handlePaymentIntentRequiresAction(paymentIntent) {
             amount: paymentIntent.amount,
             currency: paymentIntent.currency.toUpperCase(),
             items: parsedItems,
-            itemCount: parseInt(itemCount || '0'),
+            itemCount: getItemCount(parsedItems, itemCount),
 
             // Action details
             requiresAction: true,
@@ -276,14 +301,9 @@ export async function handlePaymentIntentRequiresAction(paymentIntent) {
 async function storeFailedOrder(paymentIntent, processStatus, errorMessage) {
     try {
         const db = getAdminDb();
-        const { userId, orderItems, itemCount } = paymentIntent.metadata;
+        const { userId, itemCount } = paymentIntent.metadata;
 
-        let parsedItems = [];
-        try {
-            parsedItems = JSON.parse(orderItems || '[]');
-        } catch (error) {
-            console.error('Failed to parse order items:', error);
-        }
+        const parsedItems = await getPaymentIntentOrderItems(db, paymentIntent);
 
         const errorOrderData = {
             orderId: paymentIntent.id,
@@ -296,7 +316,7 @@ async function storeFailedOrder(paymentIntent, processStatus, errorMessage) {
             amount: paymentIntent.amount,
             currency: paymentIntent.currency.toUpperCase(),
             items: parsedItems,
-            itemCount: parseInt(itemCount || '0'),
+            itemCount: getItemCount(parsedItems, itemCount),
 
             errorMessage: errorMessage,
 

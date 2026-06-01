@@ -6,6 +6,7 @@ import { getProduct } from '@/app/lib/products';
 import { AppConfig } from '@/app/lib/config';
 import { calculateCartTotals } from '@/app/lib/cartTotals';
 import { verifyFirebaseIdToken } from '@/app/lib/server-auth';
+import { admin, getAdminDb } from '@/app/lib/firebase-admin';
 
 export const runtime = 'nodejs';
 
@@ -42,6 +43,41 @@ function jsonError(error, status) {
     return NextResponse.json({ error }, { status });
 }
 
+function isUsableStripeSecretKey(value) {
+    return typeof value === 'string' &&
+        value.startsWith('sk_') &&
+        !value.includes('REPLACE_WITH');
+}
+
+async function storeInitialOrder(paymentIntent, userId, items, totals, currency) {
+    const db = getAdminDb();
+    const now = admin.firestore.Timestamp.now();
+    const orderRef = db.collection('orders').doc(paymentIntent.id);
+
+    await orderRef.set(
+        {
+            orderId: paymentIntent.id,
+            stripePaymentIntentId: paymentIntent.id,
+            userId,
+            processStatus: 'processing',
+            paymentStatus: paymentIntent.status,
+            fulfillmentStatus: 'pending',
+            amount: paymentIntent.amount,
+            currency: currency.toUpperCase(),
+            subtotal: totals.subtotalCents,
+            tax: totals.taxCents,
+            fees: totals.feesCents,
+            items,
+            itemCount: items.reduce((sum, item) => sum + Number(item.quantity || 0), 0),
+            clientSecret: paymentIntent.client_secret,
+            source: 'create_payment_intent',
+            createdAt: now,
+            updatedAt: now,
+        },
+        { merge: true }
+    );
+}
+
 export async function POST(request) {
 
     try {
@@ -57,8 +93,8 @@ export async function POST(request) {
 
         // Validate environment variables
         const stripeKey = process.env.STRIPE_SECRET_KEY;
-        if (!stripeKey) {
-            console.error('STRIPE_SECRET_KEY is not configured');
+        if (!isUsableStripeSecretKey(stripeKey)) {
+            console.error('STRIPE_SECRET_KEY is missing or still set to a placeholder');
             return jsonError('Payment system configuration error', 500);
         }
 
@@ -185,7 +221,7 @@ export async function POST(request) {
             currency: requestedCurrency,
             metadata: {
                 userId,
-                orderItems: JSON.stringify(validatedItems),
+                orderId: 'created_after_intent',
                 itemCount: String(validatedItems.reduce((sum, item) => sum + item.quantity, 0)),
             },
             automatic_payment_methods: {
@@ -193,9 +229,19 @@ export async function POST(request) {
             },
         });
 
+        const updatedPaymentIntent = await stripe.paymentIntents.update(paymentIntent.id, {
+            metadata: {
+                userId,
+                orderId: paymentIntent.id,
+                itemCount: String(validatedItems.reduce((sum, item) => sum + item.quantity, 0)),
+            },
+        });
+
+        await storeInitialOrder(updatedPaymentIntent, userId, validatedItems, totals, requestedCurrency);
+
         return NextResponse.json({
-            client_secret: paymentIntent.client_secret,
-            payload: paymentIntent,
+            client_secret: updatedPaymentIntent.client_secret,
+            payload: updatedPaymentIntent,
             amount: totals.totalCents,
         });
 
@@ -205,6 +251,14 @@ export async function POST(request) {
         if (error.type === 'StripeCardError') {
             console.error("Strip Card Error")
             return jsonError(error.message, 400);
+        }
+
+        if (error.type === 'StripeInvalidRequestError') {
+            return jsonError(error.message || 'Payment request rejected by Stripe', 400);
+        }
+
+        if (error.type === 'StripeAuthenticationError') {
+            return jsonError('Payment provider configuration error', 500);
         }
 
         return jsonError('Payment processing error', 500);

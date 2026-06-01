@@ -1,7 +1,7 @@
 // src/app/checkout/page.js
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Elements } from '@stripe/react-stripe-js';
 import { stripePromise } from '@/app/lib/stripe';
 import CheckoutForm from '@/app/components/CheckoutForm';
@@ -10,6 +10,20 @@ import { calculateCartTotals } from '@/app/lib/cartTotals';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { AlertTriangle } from 'lucide-react';
 import { readCart, writeCart } from '@/app/utils/cart';
+
+async function readApiResponse(response) {
+  const responseText = await response.text();
+
+  if (!responseText) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(responseText);
+  } catch {
+    return { error: responseText };
+  }
+}
 
 // Create payment intent and save initial order
 async function createPaymentIntentAndOrder(cart, user, idToken) {
@@ -31,46 +45,17 @@ async function createPaymentIntentAndOrder(cart, user, idToken) {
       }),
     });
 
+    const paymentData = await readApiResponse(paymentResponse);
+
     if (!paymentResponse.ok) {
-      const { error } = await paymentResponse.json();
+      const { error } = paymentData;
       throw new Error(
-        error || 'Creazione del payment intent non riuscita'
+        error || `Creazione del payment intent non riuscita (${paymentResponse.status})`
       );
     }
 
-    const paymentData = await paymentResponse.json();
-
-    // Step 2: Save initial order with processing status
-    try {
-      const orderResponse = await fetch('/api/save-order', {
-        method: 'POST',
-        headers: authHeaders,
-        body: JSON.stringify({
-          paymentIntentId: paymentData.payload.id,
-          userId: user.uid,
-          items: cart,
-          amount: totals.totalCents,
-          currency: AppConfig.CURRENCY,
-          processStatus: 'processing',
-          paymentStatus: 'requires_payment_method',
-          subtotal: totals.subtotalCents,
-          tax: totals.taxCents,
-          fees: totals.feesCents,
-          clientSecret: paymentData.client_secret,
-        }),
-      });
-
-      if (!orderResponse.ok) {
-        console.error(
-          'Failed to save initial order, but payment intent created'
-        );
-        // Don't throw error here - payment intent is created, webhook will handle order
-      } else {
-        console.log('Initial order saved successfully');
-      }
-    } catch (orderError) {
-      console.error('Error saving initial order:', orderError);
-      // Don't throw - webhook will create the order if this fails
+    if (!paymentData.client_secret || !paymentData.payload?.id) {
+      throw new Error('Risposta di pagamento non valida. Riprova tra poco.');
     }
 
     return paymentData;
@@ -82,6 +67,7 @@ async function createPaymentIntentAndOrder(cart, user, idToken) {
 
 export default function CheckoutPage() {
   const { user, loading: authLoading, getUserIdToken } = useAuth();
+  const checkoutStartedRef = useRef(false);
   const [clientSecret, setClientSecret] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -95,6 +81,10 @@ export default function CheckoutPage() {
           return;
         }
 
+        if (checkoutStartedRef.current) {
+          return;
+        }
+
         setLoading(true);
         setError('');
 
@@ -105,11 +95,14 @@ export default function CheckoutPage() {
           return;
         }
 
+        checkoutStartedRef.current = true;
+
         // Get cart from localStorage
         const savedCart = readCart();
         if (savedCart.length === 0) {
           setError('Il tuo carrello è vuoto.');
           setLoading(false);
+          checkoutStartedRef.current = false;
           return;
         }
 
@@ -127,6 +120,7 @@ export default function CheckoutPage() {
         if (validatedCart.length === 0) {
           setError('Il tuo carrello contiene articoli non validi.');
           setLoading(false);
+          checkoutStartedRef.current = false;
           return;
         }
 
@@ -141,6 +135,7 @@ export default function CheckoutPage() {
         if (!idToken) {
           setError('Sessione non valida. Accedi di nuovo per continuare.');
           setLoading(false);
+          checkoutStartedRef.current = false;
           return;
         }
 
@@ -150,6 +145,7 @@ export default function CheckoutPage() {
         setPaymentIntentId(data.payload.id);
       } catch (err) {
         console.error('Checkout initialization error:', err);
+        checkoutStartedRef.current = false;
         setError(
           err.message || 'Inizializzazione del checkout non riuscita'
         );
