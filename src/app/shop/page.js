@@ -164,7 +164,7 @@ export default function Products() {
 
         <div className="mb-8 flex flex-col gap-2">
           <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#c5471f]">{eventContent.shortName}</p>
-          <h1 className="text-4xl font-black text-[#012136]">Biglietti</h1>
+          <h1 className="text-4xl font-black text-[#012136]">Spettacoli</h1>
           <p className="max-w-2xl text-[#012136]/70">
             Seleziona gli ingressi disponibili e completa l’acquisto in sicurezza.
           </p>
