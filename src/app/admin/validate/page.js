@@ -47,6 +47,40 @@ function getCameraErrorMessage(error) {
   return error?.message || 'Impossibile avviare la fotocamera.';
 }
 
+function createQrReader({
+  BarcodeFormat,
+  BinaryBitmap,
+  BrowserQRCodeReader,
+  DecodeHintType,
+  HTMLCanvasElementLuminanceSource,
+  HybridBinarizer,
+}) {
+  const hints = new Map([
+    [DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.QR_CODE]],
+    [DecodeHintType.TRY_HARDER, true],
+    [DecodeHintType.CHARACTER_SET, 'UTF-8'],
+  ]);
+
+  class AppQrReader extends BrowserQRCodeReader {
+    decodeFromCanvas(canvas) {
+      const source = new HTMLCanvasElementLuminanceSource(canvas);
+
+      try {
+        return this.decodeBitmap(new BinaryBitmap(new HybridBinarizer(source)));
+      } catch {
+        const invertedSource = source.invert();
+        return this.decodeBitmap(new BinaryBitmap(new HybridBinarizer(invertedSource)));
+      }
+    }
+  }
+
+  return new AppQrReader(hints, {
+    delayBetweenScanAttempts: 150,
+    delayBetweenScanSuccess: 500,
+    tryPlayVideoTimeout: 8000,
+  });
+}
+
 async function getCameraPermissionState() {
   if (!navigator.permissions?.query) {
     return 'unknown';
@@ -171,8 +205,29 @@ export default function ValidateTicketsPage() {
         return;
       }
 
-      const { BrowserQRCodeReader } = await import('@zxing/browser');
-      const reader = new BrowserQRCodeReader();
+      const [
+        {
+          BrowserQRCodeReader,
+          HTMLCanvasElementLuminanceSource,
+        },
+        {
+          BarcodeFormat,
+          BinaryBitmap,
+          DecodeHintType,
+          HybridBinarizer,
+        },
+      ] = await Promise.all([
+        import('@zxing/browser'),
+        import('@zxing/library'),
+      ]);
+      const reader = createQrReader({
+        BarcodeFormat,
+        BinaryBitmap,
+        BrowserQRCodeReader,
+        DecodeHintType,
+        HTMLCanvasElementLuminanceSource,
+        HybridBinarizer,
+      });
       const constraints = {
         audio: false,
         video: {
