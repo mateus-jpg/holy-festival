@@ -64,7 +64,9 @@ export default function Cart() {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-foreground"></div>
+                <div role="status" aria-live="polite" className="animate-spin rounded-full h-32 w-32 border-b-2 border-foreground">
+                    <span className="sr-only">Caricamento carrello</span>
+                </div>
             </div>
         );
     }
@@ -83,7 +85,7 @@ export default function Cart() {
                         href="/shop"
                         className="rounded-full border border-[#012136]/18 bg-white px-4 py-2 text-sm font-bold text-[#012136] transition-colors hover:bg-[#012136]/8"
                     >
-                        Continua
+                        Continua gli acquisti
                     </Link>
                 </div>
                 {cart.length === 0 ? (
@@ -135,14 +137,20 @@ export default function Cart() {
                                         {/* Quantity Controls */}
                                         <div className="flex items-center gap-2">
                                             <button
+                                                type="button"
                                                 onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                                aria-label={`Diminuisci quantità di ${item.name}`}
                                                 className="flex h-8 w-8 items-center justify-center rounded-full border border-[#012136]/18 transition-colors hover:bg-[#012136]/8"
                                             >
                                                 −
                                             </button>
-                                            <span className="w-8 text-center">{item.quantity}</span>
+                                            <span className="w-8 text-center" aria-live="polite" aria-label={`Quantità ${item.quantity}`}>
+                                                {item.quantity}
+                                            </span>
                                             <button
+                                                type="button"
                                                 onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                aria-label={`Aumenta quantità di ${item.name}`}
                                                 className="flex h-8 w-8 items-center justify-center rounded-full border border-[#012136]/18 transition-colors hover:bg-[#012136]/8"
                                             >
                                                 +
@@ -155,7 +163,9 @@ export default function Cart() {
                                                 €{((item.price || 0) * item.quantity).toFixed(2)}
                                             </p>
                                             <button
+                                                type="button"
                                                 onClick={() => removeFromCart(item.id)}
+                                                aria-label={`Rimuovi ${item.name} dal carrello`}
                                                 className="mt-1 text-sm font-semibold text-[#8f2f18] hover:underline"
                                             >
                                                 Rimuovi
@@ -190,6 +200,7 @@ export default function Cart() {
                                 </div>
 
                                 {canCheckout ? <button
+                                    type="button"
                                     onClick={handleCheckout}
                                     className="w-full rounded-full bg-[#c5471f] py-3 font-bold text-white transition-colors hover:bg-[#8f2f18]"
                                 >

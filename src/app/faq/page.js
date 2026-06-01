@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import Link from 'next/link';
 import { Calendar, ChevronDown, ExternalLink, HeartHandshake, MapPin, Ticket, Users } from 'lucide-react';
 import { eventContent } from '@/app/lib/eventContent';
@@ -40,24 +40,37 @@ const faqs = [
 
 function FaqItem({ faq }) {
   const [open, setOpen] = useState(false);
+  const itemId = useId();
   const Icon = faq.icon;
+  const buttonId = `${itemId}-button`;
+  const panelId = `${itemId}-panel`;
 
   return (
     <div className="overflow-hidden rounded-lg border border-[#012136]/12 bg-white shadow-sm">
       <button
+        type="button"
+        id={buttonId}
         onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        aria-controls={panelId}
         className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-[#012136]/5"
       >
-        <Icon className="h-5 w-5 text-[#c5471f]" />
+        <Icon className="h-5 w-5 text-[#c5471f]" aria-hidden="true" />
         <span className="flex-1 font-black text-[#012136]">{faq.question}</span>
         <ChevronDown
+          aria-hidden="true"
           className={`h-5 w-5 text-[#012136]/50 transition-transform duration-200 ${
             open ? 'rotate-180' : ''
           }`}
         />
       </button>
       {open && (
-        <div className="px-5 pb-5 pt-1 text-sm leading-relaxed text-[#012136]/70">
+        <div
+          id={panelId}
+          role="region"
+          aria-labelledby={buttonId}
+          className="px-5 pb-5 pt-1 text-sm leading-relaxed text-[#012136]/70"
+        >
           {faq.answer}
         </div>
       )}

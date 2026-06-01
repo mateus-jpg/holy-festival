@@ -71,7 +71,7 @@ export default function SingleTicket() {
         return {
           qrBg: 'bg-green-600',
           qrColor: '#16a34a',
-          statusBadge: 'bg-green-500/90',
+          statusBadge: 'bg-green-700',
           statusText: 'Valido',
           borderColor: 'border-green-400/50'
         };
@@ -79,7 +79,7 @@ export default function SingleTicket() {
         return {
           qrBg: 'bg-[#0a6f6a]',
           qrColor: '#0a6f6a',
-          statusBadge: 'bg-[#0a6f6a]/90',
+          statusBadge: 'bg-[#075652]',
           statusText: 'In Arrivo',
           borderColor: 'border-[#0a6f6a]/50'
         };
@@ -87,7 +87,7 @@ export default function SingleTicket() {
         return {
           qrBg: 'bg-orange-600',
           qrColor: '#ea580c',
-          statusBadge: 'bg-orange-500/90',
+          statusBadge: 'bg-[#8f2f18]',
           statusText: 'Scaduto',
           borderColor: 'border-orange-400/50'
         };
@@ -95,7 +95,7 @@ export default function SingleTicket() {
         return {
           qrBg: 'bg-red-700',
           qrColor: '#dc2626',
-          statusBadge: 'bg-red-500/90',
+          statusBadge: 'bg-red-700',
           statusText: 'Utilizzato',
           borderColor: 'border-red-400/50'
         };
@@ -103,7 +103,7 @@ export default function SingleTicket() {
         return {
           qrBg: 'bg-gray-600',
           qrColor: '#6b7280',
-          statusBadge: 'bg-gray-500/90',
+          statusBadge: 'bg-gray-700',
           statusText: 'Sconosciuto',
           borderColor: 'border-gray-400/50'
         };
@@ -409,8 +409,10 @@ export default function SingleTicket() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="backdrop-blur-sm bg-white/10 p-8 rounded-2xl border border-white/20">
-          <div className="animate-spin rounded-full h-12 w-12 border-2 border-white/30 border-t-white"></div>
+        <div className="rounded-2xl border border-[#012136]/12 bg-white p-8 shadow-sm">
+          <div role="status" className="animate-spin rounded-full h-12 w-12 border-2 border-[#012136]/20 border-t-[#c5471f]">
+            <span className="sr-only">Caricamento biglietto</span>
+          </div>
         </div>
       </div>
     );
@@ -419,14 +421,14 @@ export default function SingleTicket() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="backdrop-blur-md bg-white/10 rounded-3xl p-12 border border-white/20 shadow-2xl text-center">
+        <div className="rounded-2xl border border-[#012136]/12 bg-white p-12 text-center shadow-sm">
           <div className="w-16 h-16 mx-auto mb-6 bg-red-500/20 rounded-full flex items-center justify-center">
-            <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-8 h-8 text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-white mb-4">Errore</h2>
-          <p className="text-white/80 mb-6">{error}</p>
+          <h2 className="text-2xl font-bold text-[#8f2f18] mb-4">Errore</h2>
+          <p className="text-[#012136]/75 mb-6">{error}</p>
           <Link
             href="/tickets"
             className="bg-[#012136] hover:bg-[#0a6f6a] text-white font-medium py-3 px-6 rounded-xl transition-all duration-300"
@@ -448,9 +450,9 @@ export default function SingleTicket() {
         <div className="mb-8">
           <Link
             href="/tickets"
-            className="inline-flex items-center text-white/80 hover:text-white transition-colors"
+            className="inline-flex items-center font-semibold text-[#012136] transition-colors hover:text-[#0a6f6a]"
           >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             Torna ai Biglietti
@@ -458,7 +460,7 @@ export default function SingleTicket() {
         </div>
 
         {/* Ticket Card with dynamic border */}
-        <div className={`backdrop-blur-md bg-white/10 rounded-3xl border-2 ${styling.borderColor} shadow-2xl overflow-hidden`}>
+        <div className={`rounded-2xl border-2 bg-white ${styling.borderColor} shadow-sm overflow-hidden`}>
           {/* Header */}
           <div className="relative">
             {ticket.imgUrl && (
@@ -475,24 +477,24 @@ export default function SingleTicket() {
             
             {/* Enhanced Status Badge */}
             <div className="absolute top-4 right-4 flex gap-2">
-              <span className={`${styling.statusBadge} backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2`}>
-                {status === 'upcoming' && <Calendar className="w-4 h-4" />}
-                {status === 'expired' && <Clock className="w-4 h-4" />}
-                {status === 'used' && <AlertTriangle className="w-4 h-4" />}
-                {status === 'valid' && <TicketCheck className="w-4 h-4" />}
+              <span className={`${styling.statusBadge} text-white px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2`}>
+                {status === 'upcoming' && <Calendar className="w-4 h-4" aria-hidden="true" />}
+                {status === 'expired' && <Clock className="w-4 h-4" aria-hidden="true" />}
+                {status === 'used' && <AlertTriangle className="w-4 h-4" aria-hidden="true" />}
+                {status === 'valid' && <TicketCheck className="w-4 h-4" aria-hidden="true" />}
                 {styling.statusText}
               </span>
             </div>
 
             {/* Date validation warning for admins */}
             {user.isAdmin && status === 'upcoming' && (
-              <div className="absolute top-16 right-4 bg-[#0a6f6a]/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs">
+              <div className="absolute top-16 right-4 bg-[#075652] text-white px-3 py-1 rounded-full text-xs">
                 Non ancora valido
               </div>
             )}
 
             {user.isAdmin && status === 'expired' && (
-              <div className="absolute top-16 right-4 bg-orange-500/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs">
+              <div className="absolute top-16 right-4 bg-[#8f2f18] text-white px-3 py-1 rounded-full text-xs">
                 Fuori periodo validità
               </div>
             )}
@@ -500,36 +502,36 @@ export default function SingleTicket() {
 
           <div className=" p-8">
             {/* Ticket Title */}
-            <h1 className="text-3xl font-cuanky md:text-4xl font-bold text-white mb-6 text-center">
+            <h1 className="text-3xl font-cuanky md:text-4xl font-bold text-[#012136] mb-6 text-center">
               {ticket.name}
             </h1>
 
             <div className="grid md:grid-cols-2 gap-8">
               {/* Ticket Details */}
               <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-white mb-4">Dettagli Biglietto</h2>
+                <h2 className="text-xl font-semibold text-[#012136] mb-4">Dettagli Biglietto</h2>
                 
                 <div className="space-y-4">
                   {ticket.description && (
                     <div>
-                      <label className="block text-sm font-medium text-white/80 mb-1">Descrizione</label>
-                      <p className="text-white bg-white/10 p-3 rounded-lg">{ticket.description}</p>
+                      <p className="block text-sm font-medium text-[#012136]/70 mb-1">Descrizione</p>
+                      <p className="text-[#012136] bg-[#f6f2e8] p-3 rounded-lg">{ticket.description}</p>
                     </div>
                   )}
 
                   {ticket.price && (
                     <div>
-                      <label className="block text-sm font-medium text-white/80 mb-1">Prezzo</label>
-                      <p className="text-white bg-white/10 p-3 rounded-lg">€{ticket.price.toFixed(2)}</p>
+                      <p className="block text-sm font-medium text-[#012136]/70 mb-1">Prezzo</p>
+                      <p className="text-[#012136] bg-[#f6f2e8] p-3 rounded-lg">€{ticket.price.toFixed(2)}</p>
                     </div>
                   )}
 
                   {ticket.validFrom && (
                     <div>
-                      <label className="block text-sm font-medium text-white/80 mb-1">Valido Da</label>
-                      <p className={`text-white p-3 rounded-lg ${
-                        status === 'upcoming' ? 'bg-[#0a6f6a]/20' : 
-                        status === 'expired' ? 'bg-orange-500/20' : 'bg-white/10'
+                      <p className="block text-sm font-medium text-[#012136]/70 mb-1">Valido Da</p>
+                      <p className={`text-[#012136] p-3 rounded-lg ${
+                        status === 'upcoming' ? 'bg-[#0a6f6a]/12' :
+                        status === 'expired' ? 'bg-[#c5471f]/12' : 'bg-[#f6f2e8]'
                       }`}>
                         {formatDate(ticket.validFrom)}
                       </p>
@@ -538,10 +540,10 @@ export default function SingleTicket() {
 
                   {ticket.validUntil && (
                     <div>
-                      <label className="block text-sm font-medium text-white/80 mb-1">Valido Fino</label>
-                      <p className={`text-white p-3 rounded-lg ${
-                        status === 'upcoming' ? 'bg-[#0a6f6a]/20' : 
-                        status === 'expired' ? 'bg-orange-500/20' : 'bg-white/10'
+                      <p className="block text-sm font-medium text-[#012136]/70 mb-1">Valido Fino</p>
+                      <p className={`text-[#012136] p-3 rounded-lg ${
+                        status === 'upcoming' ? 'bg-[#0a6f6a]/12' :
+                        status === 'expired' ? 'bg-[#c5471f]/12' : 'bg-[#f6f2e8]'
                       }`}>
                         {formatDate(ticket.validUntil)}
                       </p>
@@ -550,28 +552,28 @@ export default function SingleTicket() {
 
                   {ticket.eventDate && (
                     <div>
-                      <label className="block text-sm font-medium text-white/80 mb-1">Data Evento</label>
-                      <p className="text-white bg-white/10 p-3 rounded-lg">{formatDateOnly(ticket.eventDate)}</p>
+                      <p className="block text-sm font-medium text-[#012136]/70 mb-1">Data Evento</p>
+                      <p className="text-[#012136] bg-[#f6f2e8] p-3 rounded-lg">{formatDateOnly(ticket.eventDate)}</p>
                     </div>
                   )}
 
                   {ticket.location && (
                     <div>
-                      <label className="block text-sm font-medium text-white/80 mb-1">Luogo</label>
-                      <p className="text-white bg-white/10 p-3 rounded-lg">{ticket.location}</p>
+                      <p className="block text-sm font-medium text-[#012136]/70 mb-1">Luogo</p>
+                      <p className="text-[#012136] bg-[#f6f2e8] p-3 rounded-lg">{ticket.location}</p>
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium text-white/80 mb-1">ID Biglietto</label>
-                    <p className="text-white bg-white/10 p-3 rounded-lg break-all font-mono text-sm">{ticket.id}</p>
+                    <p className="block text-sm font-medium text-[#012136]/70 mb-1">ID Biglietto</p>
+                    <p className="text-[#012136] bg-[#f6f2e8] p-3 rounded-lg break-all font-mono text-sm">{ticket.id}</p>
                   </div>
                 </div>
               </div>
 
               {/* Enhanced QR Code with visual status */}
               <div className="flex flex-col items-center w-full justify-center">
-                <h2 className="text-xl font-semibold text-white mb-6">Codice QR</h2>
+                <h2 className="text-xl font-semibold text-[#012136] mb-6">Codice QR</h2>
                 
                 <div className={`p-3 rounded-2xl shadow-lg mb-4 ${styling.qrBg} relative`}>
                   <QRCodeSVG
@@ -600,16 +602,16 @@ export default function SingleTicket() {
                   )}
                 </div>
                 
-                <p className="text-white/80 text-sm text-center max-w-xs mb-4">
+                <p className="text-[#012136]/70 text-sm text-center max-w-xs mb-4">
                   Mostra questo codice QR per validare il tuo biglietto
                 </p>
 
                 {/* Status indicator text */}
                 <div className={`p-3 rounded-lg text-center mb-4 ${
-                  status === 'valid' ? 'bg-green-500/20 text-green-300' :
-                  status === 'upcoming' ? 'bg-[#0a6f6a]/20 text-[#7bd3ca]' :
-                  status === 'expired' ? 'bg-orange-500/20 text-orange-300' :
-                  'bg-red-500/20 text-red-300'
+                  status === 'valid' ? 'bg-green-500/12 text-green-700' :
+                  status === 'upcoming' ? 'bg-[#0a6f6a]/12 text-[#075652]' :
+                  status === 'expired' ? 'bg-[#c5471f]/12 text-[#8f2f18]' :
+                  'bg-red-500/12 text-red-700'
                 }`}>
                   <p className="text-sm font-medium">
                     {status === 'valid' && '✅ Biglietto valido e utilizzabile'}
@@ -624,8 +626,8 @@ export default function SingleTicket() {
                   )}
                 </div>
 
-                <div className="mt-2 p-4 bg-white/10 rounded-lg">
-                  <p className="text-white/80 text-xs text-center">
+                <div className="mt-2 p-4 bg-[#f6f2e8] rounded-lg">
+                  <p className="text-[#012136]/70 text-xs text-center">
                     Link: <span className="font-mono break-all">{qrCodeUrl}</span>
                   </p>
                 </div>

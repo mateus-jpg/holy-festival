@@ -35,9 +35,14 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${cuankyFont.variable} ${promptRegular.variable} ${promptRegular.className} antialiased`}
       >
+        <a className="skip-link" href="#main-content">
+          Salta al contenuto principale
+        </a>
         <AuthProvider>
-            <Navbar/>
-        {children}
+          <Navbar/>
+          <div id="main-content" tabIndex={-1}>
+            {children}
+          </div>
         </AuthProvider>
       </body>
     </html>

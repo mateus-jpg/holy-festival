@@ -222,7 +222,9 @@ export default function Products() {
                     </span>
                     {isProductAvailable(product) ? (
                       <button
+                        type="button"
                         onClick={() => addToCart(product)}
+                        aria-label={`Aggiungi ${product.name} al carrello`}
                         className="rounded-full bg-[#c5471f] px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-[#8f2f18]"
                       >
                         Aggiungi
@@ -241,7 +243,7 @@ export default function Products() {
       </div>
       
       {/* Componente Toaster per mostrare i toast */}
-      <Toaster />
+      <Toaster toastOptions={{ ariaProps: { role: 'status', 'aria-live': 'polite' } }} />
     </div>
   );
 }

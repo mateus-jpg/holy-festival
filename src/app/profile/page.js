@@ -133,7 +133,7 @@ export default function ProfilePage() {
                     )}
 
                     {errors.general && (
-                        <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 text-red-300 rounded-lg">
+                        <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 text-red-700 rounded-lg">
                             {errors.general}
                         </div>
                     )}

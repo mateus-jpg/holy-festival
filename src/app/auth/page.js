@@ -226,7 +226,7 @@ export default function AuthPage() {
                             autoComplete="email"
                         />
                     </div>
-                    {errors.email && <p className="mt-1 text-sm text-red-400">{errors.email}</p>}
+                    {errors.email && <p className="mt-1 text-sm font-semibold text-red-700">{errors.email}</p>}
                 </div>
 
                 <div>
@@ -245,7 +245,7 @@ export default function AuthPage() {
                             autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                         />
                     </div>
-                    {errors.password && <p className="mt-1 text-sm text-red-400">{errors.password}</p>}
+                    {errors.password && <p className="mt-1 text-sm font-semibold text-red-700">{errors.password}</p>}
                 </div>
 
                 <button
@@ -289,7 +289,7 @@ export default function AuthPage() {
             </div>
 
             {resetSuccess ? (
-                <div className="p-4 bg-green-500/20 border border-green-500/30 text-green-300 rounded-lg text-center flex items-center justify-center">
+                <div className="p-4 bg-green-500/20 border border-green-500/30 text-green-700 rounded-lg text-center flex items-center justify-center">
                     <CheckCircle className="w-5 h-5 mr-2" />
                     Email di recupero inviata!
                 </div>
@@ -311,7 +311,7 @@ export default function AuthPage() {
                                 autoComplete="email"
                             />
                         </div>
-                        {errors.email && <p className="mt-1 text-sm text-red-400">{errors.email}</p>}
+                        {errors.email && <p className="mt-1 text-sm font-semibold text-red-700">{errors.email}</p>}
                     </div>
 
                     <button
@@ -349,7 +349,7 @@ export default function AuthPage() {
         <div className="min-h-screen content-center text-[#012136] flex align-middle items-start justify-center pt-12 sm:pt-0 sm:items-center p-4">
             <div className="max-w-md w-full rounded-lg border border-[#012136]/12 bg-white p-8 shadow-sm">
                 {firebaseError && (
-                    <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 text-red-300 rounded-lg flex items-center">
+                    <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 text-red-700 rounded-lg flex items-center">
                         <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
                         {firebaseError}
                     </div>

@@ -26,10 +26,10 @@ const adminLinks = [
 ];
 
 const Logo = () => (
-  <Link href="/" className="flex items-center gap-3">
+  <Link href="/" className="flex items-center gap-3" aria-label="Vai alla homepage">
     <Image
       src={eventContent.compactLogo}
-      alt="One Bridge To-"
+      alt=""
       width={144}
       height={72}
       className="h-11 w-auto object-contain"
@@ -68,24 +68,24 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 left-0 z-50 w-full border-b border-[#012136]/12 bg-[#fffaf0]/88 shadow-sm backdrop-blur-xl">
+    <nav className="sticky top-0 left-0 z-50 w-full border-b border-[#012136]/12 bg-[#fffaf0]/88 shadow-sm backdrop-blur-xl" aria-label="Navigazione principale">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between gap-4">
           <Logo />
 
           <div className="hidden items-center gap-1 md:flex">
             {publicLinks.map((link) => (
-              <Link key={link.href} href={link.href} className={linkClass(link.href)}>
+              <Link key={link.href} href={link.href} className={linkClass(link.href)} aria-current={isActive(link.href) ? 'page' : undefined}>
                 {link.label}
               </Link>
             ))}
             {user && privateLinks.map((link) => (
-              <Link key={link.href} href={link.href} className={linkClass(link.href)}>
+              <Link key={link.href} href={link.href} className={linkClass(link.href)} aria-current={isActive(link.href) ? 'page' : undefined}>
                 {link.label}
               </Link>
             ))}
             {user?.isAdmin && adminLinks.map((link) => (
-              <Link key={link.href} href={link.href} className={linkClass(link.href)}>
+              <Link key={link.href} href={link.href} className={linkClass(link.href)} aria-current={isActive(link.href) ? 'page' : undefined}>
                 {link.label}
               </Link>
             ))}
@@ -98,23 +98,25 @@ export default function Navbar() {
                   href="/cart"
                   className="inline-flex items-center gap-2 rounded-full bg-[#c5471f] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#8f2f18]"
                 >
-                  <ShoppingCart className="h-4 w-4" />
+                  <ShoppingCart className="h-4 w-4" aria-hidden="true" />
                   Carrello
                 </Link>
                 <button
+                  type="button"
                   onClick={handleSignOut}
                   className="inline-flex items-center gap-2 rounded-full border border-[#012136]/20 px-4 py-2 text-sm font-semibold text-[#012136] transition-colors hover:bg-[#012136]/8"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="h-4 w-4" aria-hidden="true" />
                   Esci
                 </button>
               </>
             ) : (
               <button
+                type="button"
                 onClick={handleLogin}
                 className="inline-flex items-center gap-2 rounded-full bg-[#012136] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#0a6f6a]"
               >
-                <LogIn className="h-4 w-4" />
+                <LogIn className="h-4 w-4" aria-hidden="true" />
                 Accedi
               </button>
             )}
@@ -127,8 +129,8 @@ export default function Navbar() {
             aria-controls="mobile-menu"
             aria-expanded={isOpen}
           >
-            <span className="sr-only">Apri menu</span>
-            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            <span className="sr-only">{isOpen ? 'Chiudi menu' : 'Apri menu'}</span>
+            {isOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
           </button>
         </div>
       </div>
@@ -142,6 +144,7 @@ export default function Navbar() {
                 href={link.href}
                 className={`${linkClass(link.href)} block`}
                 onClick={() => setIsOpen(false)}
+                aria-current={isActive(link.href) ? 'page' : undefined}
               >
                 {link.label}
               </Link>
@@ -154,8 +157,9 @@ export default function Navbar() {
                   href={link.href}
                   className={`${linkClass(link.href)} flex items-center gap-2`}
                   onClick={() => setIsOpen(false)}
+                  aria-current={isActive(link.href) ? 'page' : undefined}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-4 w-4" aria-hidden="true" />
                   {link.label}
                 </Link>
               );
@@ -168,8 +172,9 @@ export default function Navbar() {
                   href={link.href}
                   className={`${linkClass(link.href)} flex items-center gap-2`}
                   onClick={() => setIsOpen(false)}
+                  aria-current={isActive(link.href) ? 'page' : undefined}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-4 w-4" aria-hidden="true" />
                   {link.label}
                 </Link>
               );
@@ -181,23 +186,25 @@ export default function Navbar() {
                   className="flex items-center gap-2 rounded-full bg-[#c5471f] px-4 py-3 text-sm font-semibold text-white"
                   onClick={() => setIsOpen(false)}
                 >
-                  <ShoppingCart className="h-4 w-4" />
+                  <ShoppingCart className="h-4 w-4" aria-hidden="true" />
                   Carrello
                 </Link>
                 <button
+                  type="button"
                   onClick={handleSignOut}
                   className="flex w-full items-center gap-2 rounded-full border border-[#012136]/20 px-4 py-3 text-left text-sm font-semibold text-[#012136]"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="h-4 w-4" aria-hidden="true" />
                   Esci
                 </button>
               </>
             ) : (
               <button
+                type="button"
                 onClick={handleLogin}
                 className="flex w-full items-center gap-2 rounded-full bg-[#012136] px-4 py-3 text-left text-sm font-semibold text-white"
               >
-                <LogIn className="h-4 w-4" />
+                <LogIn className="h-4 w-4" aria-hidden="true" />
                 Accedi
               </button>
             )}
