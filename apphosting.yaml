@@ -37,7 +37,7 @@ env:
       - RUNTIME
 
   - variable: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-    value: pk_live_51OHWK2B6FvgRMqbtTOkVGNaWlsAPTYNDIREB7151SIy2bAxY0plgkrWapaA7kE0kwRRl3AQ4jwsotILDQFFQ6Xvj003QNqzEOB
+    value: pk_live_51TU0VlV05tp6SPWEbf5RxDN2iUX8AuZBQutn6baxHpa03pZXR9wqPb7i9UZ7tmZGr8Zi9NEm2j0jNJ4umwKr9QA700qNlLe1P3
     availability:
       - BUILD
       - RUNTIME
