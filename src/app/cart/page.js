@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { calculateCartTotals } from '@/app/lib/cartTotals';
+import { resolveLocalImage } from '@/app/lib/localImages';
 import { readCart, writeCart } from '@/app/utils/cart';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -105,16 +106,19 @@ export default function Cart() {
                         {/* Cart Items */}
                         <div className="lg:col-span-2">
                             <div className="space-y-4">
-                                {cart.map((item) => (
+                                {cart.map((item) => {
+                                    const imageSrc = resolveLocalImage(item.imgUrl);
+
+                                    return (
                                     <div
                                         key={item.id}
                                         className="flex items-center gap-4 rounded-lg border border-[#012136]/12 bg-white p-4 shadow-sm"
                                     >
                                         {/* Product Image */}
                                         <div className="relative h-20 w-20 flex-shrink-0 rounded-lg bg-[#012136]/8">
-                                            {item.imgUrl ? (
+                                            {imageSrc ? (
                                                 <Image
-                                                    src={item.imgUrl}
+                                                    src={imageSrc}
                                                     alt={item.name}
                                                     fill
                                                     className="object-cover rounded-lg"
@@ -173,7 +177,8 @@ export default function Cart() {
                                         </div>
                                         </div>  
                                     </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
 

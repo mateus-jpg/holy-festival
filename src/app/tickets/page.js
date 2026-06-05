@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { collection, getDocs, query, orderBy, where } from 'firebase/firestore';
 import { db } from '@/app/lib/firebase';
+import { resolveLocalImage } from '@/app/lib/localImages';
 import { useAuth } from '../contexts/AuthContext';
 import { Filter, Calendar, Euro, Clock, CheckCircle, XCircle, AlertTriangle, Calendar as CalendarUpcoming } from 'lucide-react';
 
@@ -286,6 +287,7 @@ export default function Tickets() {
               const status = getTicketStatus(ticket);
               const styling = getTicketStyling(status);
               const StatusIcon = styling.icon;
+              const imageSrc = resolveLocalImage(ticket.imgUrl);
 
               return (
                 <div
@@ -294,9 +296,9 @@ export default function Tickets() {
                 >
                   {/* Ticket Image */}
                   <div className="aspect-[4/3] relative bg-[#012136]/8">
-                    {ticket.imgUrl ? (
+                    {imageSrc ? (
                       <Image
-                        src={ticket.imgUrl}
+                        src={imageSrc}
                         alt={ticket.name}
                         fill
                         className="object-cover"

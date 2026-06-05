@@ -1,3 +1,5 @@
+import { resolveLocalImage } from '@/app/lib/localImages';
+
 export const eventContent = {
   shortName: 'GMR 2026',
   title: 'Giornata Mondiale del Rifugiato 2026',
@@ -7,8 +9,8 @@ export const eventContent = {
   location: 'Verona',
   venue: 'Forte Sofia (VR)',
   sourceUrl: 'https://www.onebridgeto.com/2026/giornata-mondiale-del-rifugiato-2026',
-  logo: '/images/obt-10-logo.webp',
-  compactLogo: '/images/obt-logo.webp',
+  logo: resolveLocalImage('/images/obt-10-logo.webp'),
+  compactLogo: resolveLocalImage('/images/obt-logo.webp'),
   volunteerUrl: 'https://forms.gle/CzBwZ9Aahusacg7g7',
   volunteerRoles: [
     'Allestimenti',

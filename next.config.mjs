@@ -1,10 +1,24 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
-        domains: [
-            'drive.google.com',
-            'lh3.googleusercontent.com',
-            'firebasestorage.googleapis.com'
+        unoptimized: true,
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'drive.google.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'lh3.googleusercontent.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'firebasestorage.googleapis.com',
+            },
+            {
+                protocol: 'https',
+                hostname: '**.firebasestorage.app',
+            },
         ],
     },
 };

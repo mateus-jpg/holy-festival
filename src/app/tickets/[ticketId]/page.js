@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/app/lib/firebase';
+import { resolveLocalImage } from '@/app/lib/localImages';
 import { useAuth } from '../../contexts/AuthContext';
 import { QRCodeSVG } from 'qrcode.react';
 import { TicketCheck, Clock, AlertTriangle, Calendar, X, Check } from 'lucide-react';
@@ -442,6 +443,7 @@ export default function SingleTicket() {
 
   const styling = getTicketStyling();
   const status = getTicketStatus();
+  const ticketImageSrc = resolveLocalImage(ticket.imgUrl);
 
   return (
     <div className="min-h-screen">
@@ -463,10 +465,10 @@ export default function SingleTicket() {
         <div className={`rounded-2xl border-2 bg-white ${styling.borderColor} shadow-sm overflow-hidden`}>
           {/* Header */}
           <div className="relative">
-            {ticket.imgUrl && (
+            {ticketImageSrc && (
               <div className="h-48 relative">
                 <Image
-                  src={ticket.imgUrl}
+                  src={ticketImageSrc}
                   alt={ticket.name}
                   fill
                   className="object-cover"

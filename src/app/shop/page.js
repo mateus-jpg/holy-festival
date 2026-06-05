@@ -8,6 +8,7 @@ import { db, isFirebaseConfigured } from '@/app/lib/firebase';
 import toast, { Toaster } from 'react-hot-toast';
 import ShopFabButton from '../components/ShopFabButton';
 import { eventContent } from '@/app/lib/eventContent';
+import { resolveLocalImage } from '@/app/lib/localImages';
 import { createCartItem, readCart, writeCart } from '@/app/utils/cart';
 
 function getAvailableStock(product) {
@@ -185,16 +186,19 @@ export default function Products() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map((product) => (
+            {filteredProducts.map((product) => {
+              const imageSrc = resolveLocalImage(product.imgUrl);
+
+              return (
               <div
                 key={product.id}
                 className="overflow-hidden rounded-lg border border-[#012136]/12 bg-white shadow-sm transition-shadow hover:shadow-lg"
               >
                 {/* Product Image */}
                 <div className="relative aspect-square bg-[#012136]/8">
-                  {product.imgUrl ? (
+                  {imageSrc ? (
                     <Image
-                      src={product.imgUrl}
+                      src={imageSrc}
                       alt={product.name}
                       fill
                       className="object-cover"
@@ -237,7 +241,8 @@ export default function Products() {
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
