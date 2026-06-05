@@ -16,7 +16,7 @@ const publicLinks = [
 
 const privateLinks = [
   { href: '/profile', label: 'Profilo', icon: User },
-  { href: '/shop', label: 'Biglietti', icon: Ticket },
+  { href: '/shop', label: 'Prenotazioni', icon: Ticket },
   { href: '/tickets', label: 'Le tue prenotazioni', icon: Ticket },
 ];
 
