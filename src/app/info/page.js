@@ -125,14 +125,14 @@ export default function InfoPage() {
           </div>
           <p className="leading-relaxed text-[#012136]/72">
             Gli appuntamenti indicati come su prenotazione avranno link dedicati. Per gli ingressi
-            disponibili nello shop, l’app mantiene carrello, checkout Stripe e QR code nell’area
+            disponibili, l’app mantiene carrello, checkout Stripe e QR code nell’area
             biglietti.
           </p>
           <Link
             href="/shop"
             className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#c5471f] px-5 py-3 font-bold text-white transition-colors hover:bg-[#8f2f18]"
           >
-            Vai allo shop
+            Vai alle prenotazioni
             <Ticket className="h-4 w-4" />
           </Link>
         </div>

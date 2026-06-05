@@ -1,7 +1,8 @@
 // src/app/components/CheckoutForm.js
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
+import Link from 'next/link';
 import {
     useStripe,
     useElements,
@@ -15,11 +16,19 @@ export default function CheckoutForm({
 }) {
     const stripe = useStripe();
     const elements = useElements();
+    const termsCheckboxId = useId();
+    const termsDescriptionId = `${termsCheckboxId}-description`;
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState('');
+    const [acceptedTerms, setAcceptedTerms] = useState(false);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
+
+        if (!acceptedTerms) {
+            setMessage('Devi accettare i Termini e Condizioni per procedere con il pagamento.');
+            return;
+        }
 
         if (!stripe || !elements) {
             return;
@@ -70,6 +79,43 @@ export default function CheckoutForm({
                     layout: 'tabs',
                 }}
             />
+
+            <div className="rounded-lg border border-[#012136]/12 bg-[#f6f2e8] p-4">
+                <div className="flex items-start gap-3 text-sm leading-relaxed text-[#012136]/78">
+                    <input
+                        id={termsCheckboxId}
+                        type="checkbox"
+                        required
+                        aria-describedby={termsDescriptionId}
+                        checked={acceptedTerms}
+                        onChange={(event) => {
+                            setAcceptedTerms(event.target.checked);
+                            if (event.target.checked && message.startsWith('Devi accettare')) {
+                                setMessage('');
+                            }
+                        }}
+                        onInvalid={() => {
+                            setMessage('Devi accettare i Termini e Condizioni per procedere con il pagamento.');
+                        }}
+                        className="mt-1 h-4 w-4 shrink-0 accent-[#c5471f]"
+                    />
+                    <div>
+                        <label htmlFor={termsCheckboxId}>
+                            Accetto i Termini e Condizioni di vendita dei biglietti.
+                        </label>
+                        <div id={termsDescriptionId}>
+                            <Link
+                                href="/tc"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-bold text-[#c5471f] underline-offset-2 hover:underline"
+                            >
+                                Leggi i Termini e Condizioni
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             {message && (
                 <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">

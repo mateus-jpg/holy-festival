@@ -11,12 +11,13 @@ import { eventContent } from '@/app/lib/eventContent';
 const publicLinks = [
   { href: '/info', label: 'Programma' },
   { href: '/faq', label: 'FAQ' },
+  { href: '/tc', label: 'T&C' },
 ];
 
 const privateLinks = [
   { href: '/profile', label: 'Profilo', icon: User },
   { href: '/shop', label: 'Biglietti', icon: Ticket },
-  { href: '/tickets', label: 'I tuoi biglietti', icon: Ticket },
+  { href: '/tickets', label: 'Le tue prenotazioni', icon: Ticket },
 ];
 
 const adminLinks = [

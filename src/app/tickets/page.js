@@ -276,7 +276,7 @@ export default function Tickets() {
                 }
               </p>
               <p className="text-[#012136]/65 mt-2">
-                {statusFilter === 'all' && !user.isAdmin && 'I tuoi biglietti acquistati appariranno qui'}
+                {statusFilter === 'all' && !user.isAdmin && 'Le tue prenotazioni appariranno qui'}
               </p>
             </div>
           </div>
