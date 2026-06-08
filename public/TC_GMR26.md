@@ -1,25 +1,25 @@
-**Termini e Condizioni di vendita dei biglietti**  
+**Termini e Condizioni di vendita delle prenotazioni**  
 *Spettacoli “Fabbrico” e “Dopplerganger” — GMR26*  
 *Ultimo aggiornamento: 01/06/2026*
 
 # **1\. Soggetto venditore e identificazione**
 
-I presenti Termini e Condizioni (di seguito “T\&C”) disciplinano la vendita dei biglietti per gli spettacoli sotto indicati, organizzati nell’ambito della rassegna Giornata Mondiale del Rifugiato 2026 (di seguito la “Rassegna GMR26”), che ha come tema “Una frontiera che si chiude, un percorso che si apre”.  
+I presenti Termini e Condizioni (di seguito “T\&C”) disciplinano la vendita delle prenotazioni per gli spettacoli sotto indicati, organizzati nell’ambito della rassegna Giornata Mondiale del Rifugiato 2026 (di seguito la “Rassegna GMR26”), che ha come tema “Una frontiera che si chiude, un percorso che si apre”.  
 Gli spettacoli oggetto dei presenti T\&C sono:
 
 * **Fabbrico — Storia di un paese antifascista**, spettacolo teatrale di Massimiliano Loizzi, sabato 13 giugno 2026 al Forte Sofia. Prezzo del biglietto: **€ 15,00**.  
 * **Dopplerganger** in concerto, venerdì 19 giugno 2026 al Forte Sofia. Prezzo del biglietto: **€ 10,00**.
 
-Il soggetto che emette i biglietti, incassa i corrispettivi ed è parte contrattuale ai sensi dei presenti T\&C è esclusivamente:  
+Il soggetto che emette le prenotazioni, incassa i corrispettivi ed è parte contrattuale ai sensi dei presenti T\&C è esclusivamente:  
 **Forte Sofia** — associazione non riconosciuta
 
 * Sede legale: Via II Traversa Spianà 45/B, \[CAP\], Verona  
 * Codice fiscale: 93243800237  
 * Legale rappresentante: Silvia Bevilacqua  
-* Email per richieste relative ai biglietti: fortesofia.aps@gmail.com
+* Email per richieste relative alle prenotazioni: fortesofia.aps@gmail.com
 
 di seguito “l’Associazione”.  
-La Rassegna GMR26 è organizzata in collaborazione con **One Bridge to ETS**, che cura il coordinamento del programma e fornisce l’infrastruttura web di prenotazione dei biglietti. One Bridge to ETS non è parte del contratto di vendita del biglietto e non assume obblighi diretti nei confronti del Partecipante in relazione al pagamento, all’emissione del biglietto, ai rimborsi o al trattamento dei dati personali ai fini della vendita.  
+La Rassegna GMR26 è organizzata in collaborazione con **One Bridge to ETS**, che cura il coordinamento del programma e fornisce l’infrastruttura web di prenotazione degli spettacoli. One Bridge to ETS non è parte del contratto di vendita del biglietto e non assume obblighi diretti nei confronti del Partecipante in relazione al pagamento, all’emissione del biglietto, ai rimborsi o al trattamento dei dati personali ai fini della vendita.  
 Il fatto che la pagina di vendita sia ospitata sul dominio holy-festival.onebridgeto.com non altera l’identità del soggetto venditore, che resta l’Associazione qui sopra identificata.
 
 # **2\. Definizioni**
@@ -36,7 +36,7 @@ L’acquisto del Biglietto perfeziona un contratto tra il Partecipante e l’Ass
 
 # **4\. Prezzo e modalità di pagamento**
 
-I prezzi dei Biglietti, indicati al §1, sono comprensivi di ogni onere applicabile.  
+I prezzi delle prenotazioni, indicati al §1, sono comprensivi di ogni onere applicabile.  
 Il pagamento avviene esclusivamente online tramite la Piattaforma di pagamento Stripe. L’Associazione non tratta direttamente i dati della carta di pagamento, che sono gestiti da Stripe secondo i propri standard di sicurezza (PCI-DSS).  
 A pagamento riuscito, il Partecipante riceve all’indirizzo email indicato in fase di acquisto:
 
@@ -48,7 +48,7 @@ In caso di mancata ricezione entro 24 ore, il Partecipante è invitato a contatt
 
 # **5\. Diritto di recesso (informativa)**
 
-Ai sensi dell’art. 59, comma 1, lett. n) del D.Lgs. 206/2005 (Codice del Consumo), il diritto di recesso di 14 giorni previsto per i contratti a distanza non si applica ai contratti relativi alla prestazione di servizi connessi alle attività del tempo libero quando il contratto preveda una data o un periodo di esecuzione specifici. I Biglietti per gli Spettacoli ricadono in tale categoria.  
+Ai sensi dell’art. 59, comma 1, lett. n) del D.Lgs. 206/2005 (Codice del Consumo), il diritto di recesso di 14 giorni previsto per i contratti a distanza non si applica ai contratti relativi alla prestazione di servizi connessi alle attività del tempo libero quando il contratto preveda una data o un periodo di esecuzione specifici. Le prenotazioni per gli Spettacoli ricadono in tale categoria.  
 L’Associazione, al di là di quanto richiesto dalla legge, riconosce volontariamente al Partecipante la politica di rimborso descritta al §6.
 
 # **6\. Cancellazione da parte del Partecipante**
@@ -141,7 +141,7 @@ I presenti T\&C sono regolati dalla **legge italiana**.
 
 # **15\. Modifiche dei T\&C**
 
-L’Associazione si riserva di modificare i presenti T\&C in qualsiasi momento. Ciascun acquisto è regolato dalla versione dei T\&C vigente al momento dell’acquisto, accettata dal Partecipante in fase di pagamento. Le modifiche non hanno effetto retroattivo sui Biglietti già emessi.
+L’Associazione si riserva di modificare i presenti T\&C in qualsiasi momento. Ciascun acquisto è regolato dalla versione dei T\&C vigente al momento dell’acquisto, accettata dal Partecipante in fase di pagamento. Le modifiche non hanno effetto retroattivo sulle prenotazioni già emesse.
 
 # **16\. Disposizioni finali**
 
