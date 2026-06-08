@@ -54,7 +54,7 @@ export default function Home() {
             className="inline-flex items-center justify-center gap-2 rounded-full bg-[#c5471f] px-6 py-3 font-bold text-white shadow-sm transition-colors hover:bg-[#8f2f18]"
           >
             <Ticket className="h-5 w-5" />
-            {loading ? 'Biglietti' : user ? 'Acquista biglietti' : 'Accedi per i biglietti'}
+            Prenota il posto
           </Link>
         </div>
       </section>

@@ -221,7 +221,7 @@ export default function Cart() {
                                     href="/shop"
                                     className="mt-4 block text-center text-sm font-semibold text-[#012136] hover:underline hover:underline-offset-4"
                                 >
-                                    Continua con i biglietti
+                                    Continua con le prenotazioni
                                 </Link>
                             </div>
                         </div>

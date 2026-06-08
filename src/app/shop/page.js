@@ -167,7 +167,7 @@ export default function Products() {
           <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#c5471f]">{eventContent.shortName}</p>
           <h1 className="text-4xl font-black text-[#012136]">Spettacoli</h1>
           <p className="max-w-2xl text-[#012136]/70">
-            Seleziona gli ingressi disponibili e completa l’acquisto in sicurezza.
+            Seleziona gli ingressi disponibili e completa la tua donazione in sicurezza.
           </p>
         </div>
 
