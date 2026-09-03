@@ -2,7 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import localFont from 'next/font/local'
 import { AuthProvider } from '@/app/contexts/AuthContext';
-import Navbar from "@/app/components/NavBar";
+import Navbar from "@/app/components/BrandNavBar";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -25,8 +25,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "GMR 2026 | One Bridge To-",
-  description: "Giornata Mondiale del Rifugiato 2026 a Verona, a cura di One Bridge To-.",
+  title: "Holy Festival 2026 | Forte Sofia, Verona",
+  description: "Holy Festival 2026: musica indipendente, birra artigianale e solidarietà dall'11 al 13 settembre a Forte Sofia, Verona.",
 };
 
 export default function RootLayout({ children }) {

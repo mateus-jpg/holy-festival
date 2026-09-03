@@ -29,6 +29,10 @@ export function sanitizeCartItem(item) {
     description: item.description ? String(item.description) : '',
     imgUrl: item.imgUrl || '',
     category: item.category || '',
+    productType: item.productType === 'bundle' ? 'bundle' : 'single',
+    componentCount: Number.isInteger(Number(item.componentCount)) && Number(item.componentCount) > 0
+      ? Number(item.componentCount)
+      : 1,
     price,
     quantity,
     withFees: Boolean(item.withFees || item.withFee),
@@ -45,6 +49,8 @@ export function createCartItem(product, quantity = 1) {
     description: product.description,
     imgUrl: product.imgUrl,
     category: product.category,
+    productType: product.productType,
+    componentCount: product.componentCount || (Array.isArray(product.products) ? product.products.length : 1),
     price: product.price,
     quantity,
     withFees: product.withFees || product.withFee,

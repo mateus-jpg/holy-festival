@@ -5,8 +5,8 @@ import { Download, Mail, ScrollText, Ticket } from 'lucide-react';
 import { eventContent } from '@/app/lib/eventContent';
 
 export const metadata = {
-  title: 'Termini e Condizioni | GMR 2026',
-  description: 'Termini e Condizioni di vendita dei biglietti GMR 2026.',
+  title: 'Termini e Condizioni | Holy Festival 2026',
+  description: 'Termini e Condizioni di vendita dei biglietti Holy Festival 2026.',
 };
 
 function cleanMarkdownText(text = '') {
@@ -33,16 +33,20 @@ function renderInlineMarkdown(text) {
       return null;
     }
 
-    const strongMatch = part.match(/^\*\*(.+)\*\*$/);
+    const strongMatch = part.match(/^(\s*)\*\*(.+)\*\*(\s*)$/);
     if (strongMatch) {
       return (
-        <strong key={index} className="font-black text-[#012136]">
-          {cleanMarkdownText(strongMatch[1])}
-        </strong>
+        <span key={index}>
+          {strongMatch[1]}
+          <strong className="font-black text-[#012136]">
+            {cleanMarkdownText(strongMatch[2])}
+          </strong>
+          {strongMatch[3]}
+        </span>
       );
     }
 
-    return cleanMarkdownText(part);
+    return part.replace(/\\([\\*_[\]{}()#+\-.!&])/g, '$1');
   });
 }
 
@@ -150,7 +154,7 @@ function parseTermsMarkdown(rawMarkdown) {
 }
 
 async function getTermsDocument() {
-  const filePath = path.join(process.cwd(), 'public', 'TC_GMR26.md');
+  const filePath = path.join(process.cwd(), 'public', 'TC_HolyFestival2026.md');
   const termsMarkdown = await fs.readFile(filePath, 'utf8');
   return parseTermsMarkdown(termsMarkdown);
 }
@@ -164,7 +168,7 @@ export default async function TermsPage() {
         <p className="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-[#c5471f]">
           {eventContent.shortName}
         </p>
-        <h1 className="text-4xl font-black leading-tight text-[#012136] md:text-6xl">
+        <h1 className="display-heading text-4xl leading-tight text-[#fffaff] md:text-6xl">
           {terms.title}
         </h1>
         <p className="mt-5 max-w-3xl text-lg leading-relaxed text-[#012136]/74">
@@ -176,7 +180,7 @@ export default async function TermsPage() {
             Ultimo aggiornamento: {terms.updatedAt}
           </span>
           <Link
-            href="/TC_GMR26.md"
+            href="/TC_HolyFestival2026.md"
             target="_blank"
             className="inline-flex items-center gap-2 rounded-full border border-[#012136]/15 bg-white px-5 py-3 text-sm font-bold text-[#012136] shadow-sm transition-colors hover:bg-[#012136]/8"
           >

@@ -12,7 +12,8 @@ function userLabel(user) {
 
 function productLabel(product) {
   const stock = product.availableStock === null ? 'stock libero' : `${product.availableStock} disponibili`;
-  return `${product.name} (${stock})`;
+  const output = product.componentCount > 1 ? `${product.componentCount} ticket` : '1 ticket';
+  return `${product.name} · ${output} (${stock})`;
 }
 
 export default function GenerateTicketsPage() {
@@ -201,7 +202,7 @@ export default function GenerateTicketsPage() {
             </label>
 
             <label className="block md:col-span-2">
-              <span className="mb-2 block text-sm font-bold text-[#012136]">Biglietto</span>
+              <span className="mb-2 block text-sm font-bold text-[#012136]">Biglietto o abbonamento</span>
               <select
                 value={form.productId}
                 onChange={(event) => updateField('productId', event.target.value)}
@@ -253,6 +254,9 @@ export default function GenerateTicketsPage() {
             <div className="mt-5 rounded-lg border border-[#012136]/10 bg-[#f6f2e8] p-4 text-sm text-[#012136]/75">
               <span className="font-bold text-[#012136]">{selectedProduct.name}</span>
               {selectedProduct.description ? ` - ${selectedProduct.description}` : ''}
+              <p className="mt-2 font-bold text-[#c5471f]">
+                Verranno generati {selectedProduct.componentCount || 0} ticket per ogni unità.
+              </p>
             </div>
           )}
 
@@ -283,7 +287,7 @@ export default function GenerateTicketsPage() {
               <div className="mb-4 flex items-start gap-3 rounded-lg border border-[#0a6f6a]/25 bg-[#0a6f6a]/10 p-4 text-[#0a6f6a]">
                 <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0" />
                 <div>
-                  <p className="font-bold">Biglietti generati</p>
+                  <p className="font-bold">{result.tickets?.length || 0} ticket generati</p>
                   <p className="text-sm">{result.orderId}</p>
                 </div>
               </div>

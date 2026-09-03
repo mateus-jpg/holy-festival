@@ -103,6 +103,9 @@ async function serializeShopTicket(doc) {
 
   return {
     id: doc.id,
+    productType: product.productType === 'bundle' || templates.length > 1 ? 'bundle' : 'single',
+    componentProductIds: Array.isArray(product.componentProductIds) ? product.componentProductIds : [],
+    componentCount: templates.length,
     name: product.name || '',
     description: product.description || '',
     category: product.category || 'tickets',
@@ -113,10 +116,10 @@ async function serializeShopTicket(doc) {
     isActive: product.isActive !== false,
     withFees: Boolean(product.withFees || product.withFee),
     imgUrl: product.imgUrl || templates[0]?.imgUrl || '',
-    validFrom: templates[0]?.validFrom || '',
-    validUntil: templates[0]?.validUntil || '',
-    eventId: templates[0]?.eventId || '',
-    location: templates[0]?.location || '',
+    validFrom: serializeTimestamp(product.validFrom) || templates[0]?.validFrom || '',
+    validUntil: serializeTimestamp(product.validUntil) || templates[0]?.validUntil || '',
+    eventId: product.eventId || templates[0]?.eventId || '',
+    location: product.location || templates[0]?.location || '',
     templatePath: templates[0]?.path || '',
     templates,
     createdAt: serializeTimestamp(product.createdAt),
@@ -158,10 +161,72 @@ function buildTicketPayload(body) {
     validFrom,
     validUntil,
     imgUrl: String(body.imgUrl || '').trim(),
-    eventId: String(body.eventId || '').trim() || 'gmr-2026',
+    eventId: String(body.eventId || '').trim() || 'holy-festival-2026',
     location: String(body.location || '').trim(),
     withFees: body.withFees !== false,
     isActive: body.isActive !== false,
+    productType: body.productType === 'bundle' ? 'bundle' : 'single',
+    componentProductIds: Array.isArray(body.componentProductIds)
+      ? [...new Set(body.componentProductIds.map((id) => String(id || '').trim()).filter(Boolean))]
+      : [],
+  };
+}
+
+async function resolveBundleTemplates(db, componentProductIds) {
+  if (componentProductIds.length < 2) {
+    throw Object.assign(new Error('Seleziona almeno due biglietti singoli per creare un pacchetto'), { status: 400 });
+  }
+
+  const componentDocs = await Promise.all(
+    componentProductIds.map((productId) => db.collection('shop').doc(productId).get())
+  );
+
+  if (componentDocs.some((doc) => !doc.exists)) {
+    throw Object.assign(new Error('Uno dei biglietti scelti non esiste più'), { status: 400 });
+  }
+
+  if (componentDocs.some((doc) => doc.data().isActive === false)) {
+    throw Object.assign(new Error('I componenti di un pacchetto devono essere attivi'), { status: 400 });
+  }
+
+  if (componentDocs.some((doc) => doc.data().productType === 'bundle')) {
+    throw Object.assign(new Error('Non puoi inserire un pacchetto dentro un altro pacchetto'), { status: 400 });
+  }
+
+  const templateRefs = componentDocs.flatMap((doc) => {
+    const refs = doc.data().products;
+    return Array.isArray(refs) ? refs : [];
+  });
+  const uniqueTemplateRefs = [...new Map(templateRefs.map((ref) => [ref.path, ref])).values()];
+
+  if (uniqueTemplateRefs.length !== componentProductIds.length) {
+    throw Object.assign(new Error('Ogni componente deve contenere un solo ticket generabile'), { status: 400 });
+  }
+
+  const templateDocs = await Promise.all(uniqueTemplateRefs.map((ref) => ref.get()));
+  if (templateDocs.some((doc) => !doc.exists || doc.data().category !== 'ticket')) {
+    throw Object.assign(new Error('Uno dei componenti non contiene un template ticket valido'), { status: 400 });
+  }
+
+  const eventIds = [...new Set(templateDocs.map((doc) => String(doc.data().eventId || '').trim()).filter(Boolean))];
+  if (eventIds.length > 1) {
+    throw Object.assign(new Error('Tutti i componenti devono appartenere allo stesso evento'), { status: 400 });
+  }
+
+  const locations = [...new Set(templateDocs.map((doc) => String(doc.data().location || '').trim()).filter(Boolean))];
+  const validFromValues = templateDocs.map((doc) => doc.data().validFrom).filter(Boolean);
+  const validUntilValues = templateDocs.map((doc) => doc.data().validUntil).filter(Boolean);
+
+  return {
+    templateRefs: uniqueTemplateRefs,
+    eventId: eventIds[0] || '',
+    location: locations.length === 1 ? locations[0] : '',
+    validFrom: validFromValues.length
+      ? validFromValues.reduce((earliest, value) => (value.toMillis() < earliest.toMillis() ? value : earliest))
+      : null,
+    validUntil: validUntilValues.length
+      ? validUntilValues.reduce((latest, value) => (value.toMillis() > latest.toMillis() ? value : latest))
+      : null,
   };
 }
 
@@ -211,7 +276,22 @@ export async function POST(request) {
     suffix += 1;
   }
 
-  const templateRef = db.collection('products').doc(`${productRef.id}-ticket`);
+  let templateRefs;
+  if (payload.productType === 'bundle') {
+    try {
+      const bundleMetadata = await resolveBundleTemplates(db, payload.componentProductIds);
+      templateRefs = bundleMetadata.templateRefs;
+      payload.eventId = bundleMetadata.eventId || payload.eventId;
+      payload.location = bundleMetadata.location || payload.location;
+      payload.validFrom = bundleMetadata.validFrom;
+      payload.validUntil = bundleMetadata.validUntil;
+    } catch (error) {
+      return jsonError(error.message, error.status || 400);
+    }
+  } else {
+    templateRefs = [db.collection('products').doc(productRef.id + '-ticket')];
+  }
+
   const templateData = {
     name: payload.name,
     description: payload.description,
@@ -236,14 +316,22 @@ export async function POST(request) {
     withFees: payload.withFees,
     totalStock: payload.totalStock,
     soldCount: 0,
-    products: [templateRef],
+    products: templateRefs,
+    productType: payload.productType,
+    componentProductIds: payload.productType === 'bundle' ? payload.componentProductIds : [],
+    validFrom: payload.validFrom,
+    validUntil: payload.validUntil,
+    eventId: payload.eventId,
+    location: payload.location,
     createdAt: now,
     updatedAt: now,
     createdBy: adminRequest.decodedToken.uid,
   };
 
   await db.runTransaction(async (transaction) => {
-    transaction.set(templateRef, templateData);
+    if (payload.productType === 'single') {
+      transaction.set(templateRefs[0], templateData);
+    }
     transaction.set(productRef, productData);
   });
 
@@ -287,28 +375,49 @@ export async function PATCH(request) {
   }
 
   const product = productSnap.data();
-  const templateRefs = Array.isArray(product.products) ? product.products : [];
-  const templateRef = templateRefs[0] || db.collection('products').doc(`${productId}-ticket`);
+  const existingTemplateRefs = Array.isArray(product.products) ? product.products : [];
+  const existingProductType = product.productType === 'bundle' || existingTemplateRefs.length > 1 ? 'bundle' : 'single';
+  if (payload.productType !== existingProductType) {
+    return jsonError('Il tipo di prodotto non può essere cambiato in modifica: crea un nuovo prodotto', 400);
+  }
+
+  let templateRefs = existingTemplateRefs;
+  let templateRef = templateRefs[0] || db.collection('products').doc(`${productId}-ticket`);
+  if (payload.productType === 'bundle') {
+    try {
+      const bundleMetadata = await resolveBundleTemplates(db, payload.componentProductIds);
+      templateRefs = bundleMetadata.templateRefs;
+      payload.eventId = bundleMetadata.eventId || payload.eventId;
+      payload.location = bundleMetadata.location || payload.location;
+      payload.validFrom = bundleMetadata.validFrom;
+      payload.validUntil = bundleMetadata.validUntil;
+      templateRef = templateRefs[0];
+    } catch (error) {
+      return jsonError(error.message, error.status || 400);
+    }
+  }
   const now = admin.firestore.Timestamp.now();
 
   await db.runTransaction(async (transaction) => {
-    transaction.set(
-      templateRef,
-      {
-        name: payload.name,
-        description: payload.description,
-        price: payload.price,
-        imgUrl: payload.imgUrl || null,
-        validFrom: payload.validFrom,
-        validUntil: payload.validUntil,
-        eventId: payload.eventId,
-        location: payload.location,
-        category: 'ticket',
-        updatedAt: now,
-        updatedBy: adminRequest.decodedToken.uid,
-      },
-      { merge: true }
-    );
+    if (payload.productType === 'single') {
+      transaction.set(
+        templateRef,
+        {
+          name: payload.name,
+          description: payload.description,
+          price: payload.price,
+          imgUrl: payload.imgUrl || null,
+          validFrom: payload.validFrom,
+          validUntil: payload.validUntil,
+          eventId: payload.eventId,
+          location: payload.location,
+          category: 'ticket',
+          updatedAt: now,
+          updatedBy: adminRequest.decodedToken.uid,
+        },
+        { merge: true }
+      );
+    }
 
     transaction.set(
       productRef,
@@ -322,6 +431,12 @@ export async function PATCH(request) {
         withFees: payload.withFees,
         totalStock: payload.totalStock,
         products: templateRefs.length ? templateRefs : [templateRef],
+        productType: payload.productType,
+        componentProductIds: payload.productType === 'bundle' ? payload.componentProductIds : [],
+        validFrom: payload.validFrom,
+        validUntil: payload.validUntil,
+        eventId: payload.eventId,
+        location: payload.location,
         updatedAt: now,
         updatedBy: adminRequest.decodedToken.uid,
       },

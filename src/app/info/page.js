@@ -11,7 +11,7 @@ export default function InfoPage() {
         <p className="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-[#c5471f]">
           {eventContent.shortName}
         </p>
-        <h1 className="text-5xl font-black leading-tight text-[#012136] md:text-7xl">
+        <h1 className="display-heading text-5xl leading-tight text-[#fffaff] md:text-7xl">
           {eventContent.title}
         </h1>
         <p className="mt-5 max-w-3xl text-xl leading-relaxed text-[#012136]/75">
@@ -33,18 +33,18 @@ export default function InfoPage() {
         <div className="rounded-lg border border-[#012136]/12 bg-white p-6 shadow-sm md:p-8">
           <div className="mb-4 flex items-center gap-3">
             <HeartHandshake className="h-6 w-6 text-[#c5471f]" />
-            <h2 className="text-2xl font-black text-[#012136]">Il senso della GMR 2026</h2>
+            <h2 className="display-heading text-2xl text-[#fffaff]">Musica, comunità, solidarietà</h2>
           </div>
           <div className="space-y-4 leading-relaxed text-[#012136]/76">
             <p>
-              Marzo 2016, Idomeni. La frontiera tra Grecia e Macedonia del Nord si chiude
-              e migliaia di persone restano bloccate in un campo improvvisato. Da lì nasce
-              One Bridge To-, dieci anni fa.
+              Tre giorni di musica indipendente, birra artigianale e solidarietà nella splendida
+              cornice di Forte Sofia. Holy Festival è una rete di realtà che ogni giorno costruiscono
+              comunità, accoglienza e nuove possibilità.
             </p>
             <p>
-              La Giornata Mondiale del Rifugiato 2026 attraversa questa memoria con cinema,
-              teatro, dialoghi, laboratori e incontri. Il programma si muove tra Forte Sofia,
-              Community Center Verona, Università di Verona e altri luoghi della città.
+              Ogni biglietto contribuisce a sostenere la clinica medica di Bajed Kandala in Kurdistan
+              iracheno, che garantisce cure mediche di base gratuite a migliaia di persone. Con le
+              prime tre edizioni sono stati raccolti quasi 18.000 euro.
             </p>
           </div>
         </div>
@@ -53,15 +53,15 @@ export default function InfoPage() {
       <section className="mx-auto max-w-6xl px-6 py-10">
         <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#c5471f]">Programma</p>
-            <h2 className="mt-2 text-3xl font-black text-[#012136]">Appuntamenti principali</h2>
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#c5471f]">Line-up</p>
+            <h2 className="display-heading mt-2 text-3xl text-[#fffaff]">Tre serate, dieci nomi</h2>
           </div>
           <Link
             href={eventContent.sourceUrl}
             target="_blank"
             className="inline-flex items-center gap-2 rounded-full border border-[#012136]/18 bg-white px-4 py-2 text-sm font-bold text-[#012136] transition-colors hover:bg-[#012136]/8"
           >
-            Fonte One Bridge To-
+            Pagina ufficiale
             <ExternalLink className="h-4 w-4" />
           </Link>
         </div>
@@ -98,8 +98,8 @@ export default function InfoPage() {
             <h2 className="text-2xl font-black">Partecipa come volontariə</h2>
           </div>
           <p className="leading-relaxed text-white/78">
-            Servono persone per allestimenti, accoglienza, bar, cucina, gestione degli spazi
-            e smontaggio. Anche poche ore aiutano.
+            Holy Festival si costruisce insieme: servono persone per allestimenti, accoglienza,
+            bar, cucina, cura degli spazi e smontaggio.
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
             {eventContent.volunteerRoles.map((role) => (
@@ -113,7 +113,7 @@ export default function InfoPage() {
             target="_blank"
             className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 font-bold text-[#012136] transition-colors hover:bg-[#f1b84b]"
           >
-            Compila il modulo
+            Scrivi per partecipare
             <ExternalLink className="h-4 w-4" />
           </Link>
         </div>
@@ -124,15 +124,14 @@ export default function InfoPage() {
             <h2 className="text-2xl font-black text-[#012136]">Prenotazioni</h2>
           </div>
           <p className="leading-relaxed text-[#012136]/72">
-            Gli appuntamenti indicati come su prenotazione avranno link dedicati. Per gli ingressi
-            disponibili, l’app mantiene carrello, checkout Stripe e QR code nell’area
-            prenotazioni.
+            Acquista il giornaliero o l’abbonamento tre giorni. Il carrello, il checkout Stripe
+            e il QR code nell’area biglietti restano invariati.
           </p>
           <Link
             href="/shop"
             className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#c5471f] px-5 py-3 font-bold text-white transition-colors hover:bg-[#8f2f18]"
           >
-            Vai alle prenotazioni
+            Vai ai biglietti
             <Ticket className="h-4 w-4" />
           </Link>
         </div>

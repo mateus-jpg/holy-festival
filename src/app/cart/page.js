@@ -8,6 +8,7 @@ import { calculateCartTotals } from '@/app/lib/cartTotals';
 import { resolveLocalImage } from '@/app/lib/localImages';
 import { readCart, writeCart } from '@/app/utils/cart';
 import { useAuth } from '../contexts/AuthContext';
+import { eventContent } from '@/app/lib/eventContent';
 
 export default function Cart() {
     const [cart, setCart] = useState([]);
@@ -79,8 +80,8 @@ export default function Cart() {
             <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
                 <div className="mb-8 flex items-center justify-between gap-4">
                     <div>
-                        <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#c5471f]">GMR 2026</p>
-                        <h1 className="text-4xl font-black text-[#012136]">Carrello</h1>
+                        <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#c5471f]">{eventContent.shortName}</p>
+                        <h1 className="display-heading text-5xl text-[#fffaff]">Carrello</h1>
                     </div>
                     <Link
                         href="/shop"
@@ -133,6 +134,11 @@ export default function Cart() {
                                         {/* Product Details */}
                                         <div className="flex-grow">
                                             <h3 className="font-semibold text-lg">{item.name}</h3>
+                                            {item.productType === 'bundle' && (
+                                                <p className="text-xs font-bold uppercase tracking-[0.1em] text-[#c5471f]">
+                                                    Abbonamento · {item.componentCount} ingressi per unità
+                                                </p>
+                                            )}
                                             <p className="text-sm text-[#012136]/62">
                                                 {item.price?.toFixed(2) || '0.00'}€ l'uno
                                             </p>

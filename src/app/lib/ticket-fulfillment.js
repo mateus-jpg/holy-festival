@@ -27,11 +27,41 @@ export async function updateProductInventory(items, { throwOnError = false } = {
   }
 }
 
+export async function getTicketTemplateDocs(product) {
+  const templateRefs = Array.isArray(product.products) ? product.products : [];
+  if (templateRefs.length === 0) {
+    throw new Error('Il prodotto non contiene riferimenti a ticket generabili');
+  }
+
+  const templateDocs = await Promise.all(templateRefs.map((ref) => ref.get()));
+  if (templateDocs.some((doc) => !doc.exists || doc.data().category !== 'ticket')) {
+    throw new Error('Il prodotto contiene un template ticket non valido');
+  }
+
+  return templateDocs;
+}
+
 export async function createUserProducts(orderId, userId, orderItems) {
   try {
     const db = getAdminDb();
-    const batch = db.batch();
+    const pendingBatches = [];
+    let batch = db.batch();
+    let writesInBatch = 0;
     const createdTickets = [];
+    const batchSet = (ref, data, options) => {
+      if (writesInBatch >= 450) {
+        pendingBatches.push(batch);
+        batch = db.batch();
+        writesInBatch = 0;
+      }
+
+      if (options) {
+        batch.set(ref, data, options);
+      } else {
+        batch.set(ref, data);
+      }
+      writesInBatch += 1;
+    };
 
     for (const item of orderItems) {
       const productDoc = await db.collection('shop').doc(item.itemId).get();
@@ -48,12 +78,12 @@ export async function createUserProducts(orderId, userId, orderItems) {
         continue;
       }
 
-      const productRefs = await Promise.all(product.products.map((ref) => ref.get()));
+      const productRefs = await getTicketTemplateDocs(product);
 
       for (let i = 0; i < item.quantity; i++) {
         await createTicketUserProduct(
           db,
-          batch,
+          batchSet,
           orderId,
           userId,
           productRefs,
@@ -63,7 +93,12 @@ export async function createUserProducts(orderId, userId, orderItems) {
       }
     }
 
-    await batch.commit();
+    if (writesInBatch > 0) {
+      pendingBatches.push(batch);
+    }
+    for (const pendingBatch of pendingBatches) {
+      await pendingBatch.commit();
+    }
     console.log(`Created user products for order ${orderId}`);
     return createdTickets;
   } catch (error) {
@@ -74,7 +109,7 @@ export async function createUserProducts(orderId, userId, orderItems) {
 
 async function createTicketUserProduct(
   db,
-  batch,
+  batchSet,
   orderId,
   userId,
   productRefs,
@@ -100,7 +135,7 @@ async function createTicketUserProduct(
       const ticketNumber = createStableTicketNumber(orderId, userId, productDoc.id, dateString, sequence, subsequence);
       const ticketRef = db.collection('tickets').doc(ticketNumber);
 
-      batch.set(ticketRef, {
+      batchSet(ticketRef, {
         userId,
         orderId,
         name: productData.name,
@@ -120,7 +155,7 @@ async function createTicketUserProduct(
         category: productData.category,
       });
 
-      batch.set(productRef, {
+      batchSet(productRef, {
         userId,
         orderId,
         userProductIdRef: userProductId,
@@ -146,7 +181,7 @@ async function createTicketUserProduct(
         userProductId,
       });
     } else {
-      batch.set(productRef, {
+      batchSet(productRef, {
         userId,
         orderId,
         userProductIdRef: userProductId,

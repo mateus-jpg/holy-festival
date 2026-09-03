@@ -8,18 +8,18 @@ import { eventContent } from '@/app/lib/eventContent';
 const faqs = [
   {
     icon: Calendar,
-    question: 'Quando si svolge la GMR 2026?',
-    answer: 'Gli appuntamenti pubblicati sono in programma il 12, 13, 18, 19, 20 e 21 giugno 2026 a Verona.',
+    question: 'Quando si svolge Holy Festival 2026?',
+    answer: 'Holy Festival 2026 si svolge venerdì 11, sabato 12 e domenica 13 settembre 2026 a Forte Sofia, Verona.',
   },
   {
     icon: MapPin,
     question: 'Dove si svolgono gli eventi?',
-    answer: 'Il programma attraversa Forte Sofia, Community Center Verona, Università degli Studi di Verona e Stazione Verona Porta Nuova.',
+    answer: 'Tutte le giornate si svolgono a Forte Sofia, in Via Monte Novegno, 37138 Verona.',
   },
   {
     icon: Ticket,
     question: 'Come funzionano biglietti e prenotazioni?',
-    answer: 'Gli eventi indicati come su prenotazione avranno link dedicati. I biglietti acquistati nello shop restano disponibili nella tua area biglietti con QR code.',
+    answer: 'Il giornaliero costa €10 venerdì, €10 sabato e €5 domenica. L’abbonamento per tutte e tre le giornate costa €20. Venerdì e sabato l’ingresso è libero fino alle 20:00, mentre il biglietto garantisce l’accesso in ogni orario di apertura; domenica il biglietto è sempre richiesto. I biglietti acquistati nello shop restano disponibili nella tua area biglietti con QR code.',
   },
   {
     icon: Users,
@@ -28,13 +28,13 @@ const faqs = [
   },
   {
     icon: HeartHandshake,
-    question: 'Chi organizza la Giornata Mondiale del Rifugiato?',
-    answer: 'L’iniziativa è curata da One Bridge To-, associazione nata nel 2016 a partire dall’esperienza di Idomeni e attiva lungo la Rotta Balcanica e a Verona.',
+    question: 'Chi organizza Holy Festival?',
+    answer: 'Holy Festival è ideato e organizzato da RedLab Darkroom, One Bridge To-, Osteria ai Preti, Santa Maria Craft Pub e Forte Sofia APS.',
   },
   {
     icon: HeartHandshake,
-    question: 'Qual è il tema del 2026?',
-    answer: 'Il claim è “Una frontiera che si chiude, un percorso che si apre”: memoria, confini, diritti, cura e percorsi collettivi che restano aperti.',
+    question: 'Dove vanno i fondi del festival?',
+    answer: 'Ogni biglietto contribuisce a sostenere la clinica medica di Bajed Kandala, in Kurdistan iracheno. Le prime tre edizioni hanno raccolto quasi 18.000 euro per progetti in Kurdistan iracheno.',
   },
 ];
 
@@ -85,9 +85,9 @@ export default function FaqPage() {
         <p className="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-[#c5471f]">
           {eventContent.shortName}
         </p>
-        <h1 className="text-5xl font-black text-[#012136] md:text-6xl">Domande frequenti</h1>
+        <h1 className="display-heading text-5xl text-[#fffaff] md:text-7xl">Domande frequenti</h1>
         <p className="mt-5 max-w-2xl leading-relaxed text-[#012136]/72">
-          Le informazioni essenziali su programma, luoghi, prenotazioni e volontariato.
+          Programma, accessi, biglietti e tutto quello che serve per arrivare prontə.
         </p>
       </section>
 
@@ -99,16 +99,16 @@ export default function FaqPage() {
         </div>
 
         <div className="mt-8 rounded-lg border border-[#012136]/12 bg-[#012136] p-6 text-white shadow-sm">
-          <h2 className="text-xl font-black">Modulo volontariə</h2>
+          <h2 className="text-xl font-black">Vuoi dare una mano?</h2>
           <p className="mt-2 text-sm leading-relaxed text-white/76">
-            Per dare disponibilità su una o più giornate puoi usare il modulo pubblicato da One Bridge To-.
+            Per disponibilità su allestimenti, accoglienza, bar, cucina o smontaggio scrivi a Forte Sofia.
           </p>
           <Link
             href={eventContent.volunteerUrl}
             target="_blank"
             className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-bold text-[#012136] transition-colors hover:bg-[#f1b84b]"
           >
-            Apri modulo
+            Scrivi a Forte Sofia
             <ExternalLink className="h-4 w-4" />
           </Link>
         </div>

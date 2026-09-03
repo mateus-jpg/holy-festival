@@ -7,6 +7,7 @@ import { AppConfig } from '@/app/lib/config';
 import { calculateCartTotals } from '@/app/lib/cartTotals';
 import { verifyFirebaseIdToken } from '@/app/lib/server-auth';
 import { admin, getAdminDb } from '@/app/lib/firebase-admin';
+import { getTicketTemplateDocs } from '@/app/lib/ticket-fulfillment';
 
 export const runtime = 'nodejs';
 
@@ -183,6 +184,13 @@ export async function POST(request) {
                 return jsonError(`Product ${product.id} has an invalid price`, 400);
             }
 
+            let templateDocs;
+            try {
+                templateDocs = await getTicketTemplateDocs(product);
+            } catch (error) {
+                return jsonError(error.message || `Product ${product.id} is not a valid ticket product`, 400);
+            }
+
             const requestedPrice = Number(item.price);
             if (!Number.isFinite(requestedPrice) || Math.round(requestedPrice * 100) !== Math.round(productPrice * 100)) {
                 console.error('Price mismatch detected');
@@ -200,6 +208,7 @@ export async function POST(request) {
                 category: product.category || '',
                 price: productPrice,
                 quantity,
+                ticketCount: templateDocs.length,
                 withFees: Boolean(product.withFees || product.withFee),
             });
         }

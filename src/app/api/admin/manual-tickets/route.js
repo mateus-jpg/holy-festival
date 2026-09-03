@@ -6,7 +6,7 @@ import { AppConfig } from '@/app/lib/config';
 import { admin, getAdminAuth, getAdminDb } from '@/app/lib/firebase-admin';
 import { getProduct } from '@/app/lib/products';
 import { verifyAdminRequest } from '@/app/lib/server-auth';
-import { createUserProducts, updateProductInventory } from '@/app/lib/ticket-fulfillment';
+import { createUserProducts, getTicketTemplateDocs, updateProductInventory } from '@/app/lib/ticket-fulfillment';
 
 export const runtime = 'nodejs';
 
@@ -34,6 +34,10 @@ function serializeProduct(doc) {
   return {
     id: doc.id,
     name: product.name || doc.id,
+    productType: product.productType === 'bundle' || (Array.isArray(product.products) && product.products.length > 1)
+      ? 'bundle'
+      : 'single',
+    componentCount: Array.isArray(product.products) ? product.products.length : 0,
     description: product.description || '',
     category: product.category || '',
     price: Number(product.price || 0),
@@ -186,6 +190,13 @@ export async function POST(request) {
     return jsonError('Questo prodotto non contiene riferimenti a biglietti generabili', 400);
   }
 
+  let templateDocs;
+  try {
+    templateDocs = await getTicketTemplateDocs(product);
+  } catch (error) {
+    return jsonError(error.message || 'Questo prodotto non contiene ticket generabili validi', 400);
+  }
+
   const availableStock = getAvailableStock(product);
   if (consumeInventory && availableStock !== null && quantity > availableStock) {
     return jsonError('Disponibilità insufficiente per generare questi biglietti', 400);
@@ -202,6 +213,7 @@ export async function POST(request) {
       category: product.category || '',
       price: productPrice,
       quantity,
+      ticketCount: templateDocs.length,
       withFees: false,
       manual: true,
     },
@@ -223,6 +235,7 @@ export async function POST(request) {
     fees: 0,
     items: orderItems,
     itemCount: quantity,
+    ticketCount: templateDocs.length * quantity,
     source: 'admin_manual',
     note,
     consumeInventory,

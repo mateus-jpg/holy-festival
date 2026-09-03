@@ -14,8 +14,10 @@ const emptyForm = {
   imgUrl: '',
   validFrom: '',
   validUntil: '',
-  eventId: 'gmr-2026',
-  location: '',
+  eventId: 'holy-festival-2026',
+  location: 'Forte Sofia, Verona',
+  productType: 'single',
+  componentProductIds: [],
   withFees: true,
   isActive: true,
 };
@@ -34,8 +36,10 @@ function normalizeForm(ticket) {
     imgUrl: ticket.imgUrl || '',
     validFrom: ticket.validFrom || '',
     validUntil: ticket.validUntil || '',
-    eventId: ticket.eventId || 'gmr-2026',
+    eventId: ticket.eventId || 'holy-festival-2026',
     location: ticket.location || '',
+    productType: ticket.productType === 'bundle' ? 'bundle' : 'single',
+    componentProductIds: Array.isArray(ticket.componentProductIds) ? ticket.componentProductIds : [],
     withFees: ticket.withFees !== false,
     isActive: ticket.isActive !== false,
   };
@@ -51,6 +55,12 @@ function statusLabel(ticket) {
   }
 
   return 'In vendita';
+}
+
+function componentLabel(ticket) {
+  const template = ticket.templates?.[0];
+  const date = template?.validFrom ? template.validFrom.slice(0, 10) : '';
+  return date ? `${ticket.name} · ${date}` : ticket.name;
 }
 
 export default function ManageTicketsPage() {
@@ -69,6 +79,14 @@ export default function ManageTicketsPage() {
   const inactiveTickets = useMemo(
     () => tickets.filter((ticket) => ticket.isActive === false),
     [tickets]
+  );
+  const singleTickets = useMemo(
+    () => tickets.filter((ticket) => ticket.productType === 'single' && ticket.isActive !== false),
+    [tickets]
+  );
+  const selectedBundleTickets = useMemo(
+    () => singleTickets.filter((ticket) => form.componentProductIds.includes(ticket.id)),
+    [form.componentProductIds, singleTickets]
   );
 
   const loadTickets = useCallback(async () => {
@@ -114,6 +132,23 @@ export default function ManageTicketsPage() {
     setForm((current) => ({
       ...current,
       [field]: value,
+    }));
+  };
+
+  const updateProductType = (productType) => {
+    setForm((current) => ({
+      ...current,
+      productType,
+      componentProductIds: productType === 'bundle' ? current.componentProductIds : [],
+    }));
+  };
+
+  const toggleComponent = (productId) => {
+    setForm((current) => ({
+      ...current,
+      componentProductIds: current.componentProductIds.includes(productId)
+        ? current.componentProductIds.filter((id) => id !== productId)
+        : [...current.componentProductIds, productId],
     }));
   };
 
@@ -331,8 +366,26 @@ export default function ManageTicketsPage() {
             )}
           </div>
 
-          <div className="grid gap-4">
-            {!editingId && (
+            <div className="grid gap-4">
+              <label className="block">
+                <span className="mb-2 block text-sm font-bold text-[#012136]">Tipo di prodotto</span>
+                <select
+                  value={form.productType}
+                  onChange={(event) => updateProductType(event.target.value)}
+                  disabled={Boolean(editingId)}
+                  className="w-full rounded-lg border border-[#012136]/20 bg-white px-4 py-3 text-[#012136] disabled:bg-[#012136]/5 disabled:text-[#012136]/60"
+                >
+                  <option value="single">Biglietto singolo</option>
+                  <option value="bundle">Pacchetto / abbonamento</option>
+                </select>
+                {editingId && (
+                  <span className="mt-2 block text-xs text-[#012136]/60">
+                    Il tipo non si cambia dopo la creazione: per un nuovo pacchetto crea un nuovo prodotto.
+                  </span>
+                )}
+              </label>
+
+              {!editingId && (
               <label className="block">
                 <span className="mb-2 block text-sm font-bold text-[#012136]">ID opzionale</span>
                 <input
@@ -354,6 +407,40 @@ export default function ManageTicketsPage() {
                 required
               />
             </label>
+
+            {form.productType === 'bundle' && (
+              <fieldset className="rounded-lg border border-[#c5471f]/30 bg-[#f6f2e8] p-4">
+                <legend className="px-1 text-sm font-bold text-[#012136]">Biglietti inclusi nell’abbonamento</legend>
+                <p className="mb-3 text-sm text-[#012136]/70">
+                  Seleziona i biglietti singoli già creati. Ne verrà generato uno per ogni giornata.
+                </p>
+                {singleTickets.length === 0 ? (
+                  <p className="rounded-lg border border-[#8f2f18]/25 bg-[#c5471f]/10 p-3 text-sm font-semibold text-[#8f2f18]">
+                    Crea prima almeno due biglietti singoli.
+                  </p>
+                ) : (
+                  <div className="grid gap-2">
+                    {singleTickets.map((ticket) => (
+                      <label key={ticket.id} className="flex items-start gap-3 rounded-lg border border-[#012136]/12 bg-white px-3 py-3">
+                        <input
+                          type="checkbox"
+                          checked={form.componentProductIds.includes(ticket.id)}
+                          onChange={() => toggleComponent(ticket.id)}
+                          className="mt-1 h-4 w-4 accent-[#c5471f]"
+                        />
+                        <span className="min-w-0">
+                          <span className="block text-sm font-bold text-[#012136]">{ticket.name}</span>
+                          <span className="block text-xs text-[#012136]/60">{componentLabel(ticket)}</span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+                <p className="mt-3 text-xs font-bold uppercase tracking-[0.12em] text-[#c5471f]">
+                  {form.componentProductIds.length} ticket selezionati
+                </p>
+              </fieldset>
+            )}
 
             <label className="block">
               <span className="mb-2 block text-sm font-bold text-[#012136]">Descrizione</span>
@@ -403,47 +490,65 @@ export default function ManageTicketsPage() {
               />
             </label>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block">
-                <span className="mb-2 block text-sm font-bold text-[#012136]">Valido da</span>
-                <input
-                  type="datetime-local"
-                  value={form.validFrom}
-                  onChange={(event) => updateField('validFrom', event.target.value)}
-                  className="w-full rounded-lg border border-[#012136]/20 bg-white px-4 py-3 text-[#012136]"
-                />
-              </label>
+            {form.productType === 'single' ? (
+              <>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-bold text-[#012136]">Valido da</span>
+                    <input
+                      type="datetime-local"
+                      value={form.validFrom}
+                      onChange={(event) => updateField('validFrom', event.target.value)}
+                      className="w-full rounded-lg border border-[#012136]/20 bg-white px-4 py-3 text-[#012136]"
+                    />
+                  </label>
 
-              <label className="block">
-                <span className="mb-2 block text-sm font-bold text-[#012136]">Valido fino</span>
-                <input
-                  type="datetime-local"
-                  value={form.validUntil}
-                  onChange={(event) => updateField('validUntil', event.target.value)}
-                  className="w-full rounded-lg border border-[#012136]/20 bg-white px-4 py-3 text-[#012136]"
-                />
-              </label>
-            </div>
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-bold text-[#012136]">Valido fino</span>
+                    <input
+                      type="datetime-local"
+                      value={form.validUntil}
+                      onChange={(event) => updateField('validUntil', event.target.value)}
+                      className="w-full rounded-lg border border-[#012136]/20 bg-white px-4 py-3 text-[#012136]"
+                    />
+                  </label>
+                </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block">
-                <span className="mb-2 block text-sm font-bold text-[#012136]">Evento</span>
-                <input
-                  value={form.eventId}
-                  onChange={(event) => updateField('eventId', event.target.value)}
-                  className="w-full rounded-lg border border-[#012136]/20 bg-white px-4 py-3 text-[#012136]"
-                />
-              </label>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-bold text-[#012136]">Evento</span>
+                    <input
+                      value={form.eventId}
+                      onChange={(event) => updateField('eventId', event.target.value)}
+                      className="w-full rounded-lg border border-[#012136]/20 bg-white px-4 py-3 text-[#012136]"
+                    />
+                  </label>
 
-              <label className="block">
-                <span className="mb-2 block text-sm font-bold text-[#012136]">Luogo</span>
-                <input
-                  value={form.location}
-                  onChange={(event) => updateField('location', event.target.value)}
-                  className="w-full rounded-lg border border-[#012136]/20 bg-white px-4 py-3 text-[#012136]"
-                />
-              </label>
-            </div>
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-bold text-[#012136]">Luogo</span>
+                    <input
+                      value={form.location}
+                      onChange={(event) => updateField('location', event.target.value)}
+                      className="w-full rounded-lg border border-[#012136]/20 bg-white px-4 py-3 text-[#012136]"
+                    />
+                  </label>
+                </div>
+              </>
+            ) : (
+              <div className="rounded-lg border border-[#012136]/12 bg-[#f6f2e8] p-4 text-sm text-[#012136]/75">
+                <p className="font-bold text-[#012136]">Validità del pacchetto</p>
+                {selectedBundleTickets.length > 0 ? (
+                  <ul className="mt-2 space-y-1">
+                    {selectedBundleTickets.map((ticket) => (
+                      <li key={ticket.id}>{componentLabel(ticket)}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-2">La validità verrà ereditata dai ticket selezionati.</p>
+                )}
+                <p className="mt-2 text-xs">Evento, luogo e date vengono derivati server-side dai componenti.</p>
+              </div>
+            )}
 
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="flex items-center gap-3 rounded-lg border border-[#012136]/12 bg-[#f6f2e8] px-4 py-3">
@@ -470,11 +575,11 @@ export default function ManageTicketsPage() {
 
           <button
             type="submit"
-            disabled={submitting}
+            disabled={submitting || (form.productType === 'bundle' && form.componentProductIds.length < 2)}
             className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#012136] px-6 py-3 font-bold text-white transition-colors hover:bg-[#0a6f6a] disabled:bg-[#012136]/35"
           >
             {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
-            {editingId ? 'Salva modifiche' : 'Crea biglietto'}
+            {editingId ? 'Salva modifiche' : form.productType === 'bundle' ? 'Crea abbonamento' : 'Crea biglietto'}
           </button>
         </form>
 
@@ -523,6 +628,11 @@ function TicketList({ title, tickets, submitting, onEdit, onToggle, onDelete }) 
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="text-lg font-black text-[#012136]">{ticket.name || ticket.id}</h3>
+                    <span className="rounded-full bg-[#c5471f]/12 px-2.5 py-1 text-xs font-bold text-[#c5471f]">
+                      {ticket.productType === 'bundle'
+                        ? `Abbonamento · ${ticket.componentCount || 0} ticket`
+                        : 'Biglietto singolo'}
+                    </span>
                     <span className="rounded-full bg-[#012136]/8 px-2.5 py-1 text-xs font-bold text-[#012136]/70">
                       {statusLabel(ticket)}
                     </span>
@@ -530,6 +640,11 @@ function TicketList({ title, tickets, submitting, onEdit, onToggle, onDelete }) 
                   <p className="mt-1 text-sm text-[#012136]/60">{ticket.id}</p>
                   {ticket.description && (
                     <p className="mt-2 text-sm text-[#012136]/70">{ticket.description}</p>
+                  )}
+                  {ticket.productType === 'bundle' && ticket.templates?.length > 0 && (
+                    <p className="mt-2 text-sm font-semibold text-[#012136]/70">
+                      Include: {ticket.templates.map((template) => template.name).filter(Boolean).join(' · ')}
+                    </p>
                   )}
                   <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm font-semibold text-[#012136]/75">
                     <span>€{Number(ticket.price || 0).toFixed(2)}</span>
