@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { ClipboardList, LogIn, LogOut, Menu, QrCode, ShoppingCart, Ticket, TicketPlus, User, X } from 'lucide-react';
 import { useAuth } from '@/app/contexts/AuthContext';
+import holyFestivalLogo from '../../../public/images/holy-logo-type-transparent.png';
 
 const publicLinks = [
   { href: '/info', label: 'Programma' },
@@ -29,7 +30,7 @@ function BrandLockup() {
   return (
     <Link href="/" className="brand-logo-link" aria-label="Holy Festival — vai alla homepage">
       <Image
-        src="/images/holy-logo-type-transparent.png"
+        src={holyFestivalLogo}
         alt="Holy Festival Verona"
         width={592}
         height={588}
