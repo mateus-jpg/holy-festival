@@ -3,6 +3,7 @@ import "./globals.css";
 import localFont from 'next/font/local'
 import { AuthProvider } from '@/app/contexts/AuthContext';
 import Navbar from "@/app/components/BrandNavBar";
+import AmbientShapes from "@/app/components/AmbientShapes";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -27,6 +28,9 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "Holy Festival 2026 | Forte Sofia, Verona",
   description: "Holy Festival 2026: musica indipendente, birra artigianale e solidarietà dall'11 al 13 settembre a Forte Sofia, Verona.",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({ children }) {
@@ -38,6 +42,7 @@ export default function RootLayout({ children }) {
         <a className="skip-link" href="#main-content">
           Salta al contenuto principale
         </a>
+        <AmbientShapes />
         <AuthProvider>
           <Navbar/>
           <div id="main-content" tabIndex={-1}>

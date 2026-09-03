@@ -112,10 +112,10 @@ export default function Home() {
         <div className="grid gap-4 sm:grid-cols-2">
           {eventContent.highlights.map((item, index) => {
             const Icon = index === 0 ? Users : HeartHandshake;
-            const panelClass = index === 0 ? 'feature-panel feature-panel--lime sm:col-span-2' : index === 1 ? 'feature-panel--cyan' : 'feature-panel--magenta';
+            const panelTone = index === 0 ? 'feature-panel--lime sm:col-span-2' : index === 1 ? 'feature-panel--cyan' : 'feature-panel--magenta';
 
             return (
-              <article key={item.title} className={panelClass}>
+              <article key={item.title} className={`feature-panel ${panelTone}`}>
                 <Icon className="mb-9 h-7 w-7" aria-hidden="true" />
                 <h3 className="display-heading text-3xl sm:text-4xl">{item.title}</h3>
                 <p className="mt-4 max-w-prose text-sm leading-relaxed opacity-80">{item.text}</p>

@@ -504,7 +504,7 @@ export default function SingleTicket() {
 
           <div className=" p-8">
             {/* Ticket Title */}
-            <h1 className="text-3xl font-cuanky md:text-4xl font-bold text-[#012136] mb-6 text-center">
+            <h1 className="display-heading mb-6 text-center text-4xl text-[#fffaff] md:text-5xl">
               {ticket.name}
             </h1>
 

@@ -199,13 +199,13 @@ export default function CheckoutPage() {
           <div className="space-y-3">
             <a
               href="/cart"
-              className="block bg-[#012136] hover:bg-[#0a6f6a] text-white px-6 py-3 rounded-lg transition-colors"
+              className="site-button site-button-primary block w-full"
             >
               Torna al Carrello
             </a>
             <button
               onClick={() => window.location.reload()}
-              className="block w-full bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded-lg transition-colors"
+              className="site-button site-button-secondary block w-full"
             >
               Riprova
             </button>

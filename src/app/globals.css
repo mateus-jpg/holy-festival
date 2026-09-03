@@ -45,7 +45,7 @@ body {
 body::before {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  z-index: 0;
   pointer-events: none;
   opacity: 0.12;
   content: "";
@@ -54,6 +54,136 @@ body::before {
     linear-gradient(90deg, rgba(200, 250, 247, 0.04) 1px, transparent 1px);
   background-size: 42px 42px;
   mask-image: linear-gradient(to bottom, black, transparent 88%);
+}
+
+.ambient-shapes {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.68;
+}
+
+.ambient-shape {
+  position: absolute;
+  display: block;
+  will-change: transform;
+}
+
+.ambient-shape--circle {
+  top: 13%;
+  left: 5%;
+  width: 10rem;
+  aspect-ratio: 1;
+  border: 1px solid rgba(200, 250, 247, 0.3);
+  border-radius: 50%;
+}
+
+.ambient-shape--triangle {
+  top: 29%;
+  right: 8%;
+  width: 0;
+  height: 0;
+  border-right: 3.25rem solid transparent;
+  border-bottom: 5.6rem solid rgba(255, 0, 83, 0.16);
+  border-left: 3.25rem solid transparent;
+  filter: drop-shadow(0 0 1.2rem rgba(255, 0, 83, 0.2));
+}
+
+.ambient-shape--ring {
+  right: 7%;
+  bottom: 13%;
+  width: 13rem;
+  aspect-ratio: 1;
+  border: 1px solid rgba(210, 255, 0, 0.28);
+  border-radius: 50%;
+}
+
+.ambient-shape--diamond {
+  bottom: 18%;
+  left: 15%;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255, 250, 255, 0.6);
+  transform: rotate(45deg);
+}
+
+#main-content {
+  position: relative;
+  z-index: 1;
+}
+
+@media (min-width: 64rem) {
+  .mobile-menu-panel {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ambient-shape--circle {
+    animation: ambient-drift-one 34s ease-in-out infinite alternate;
+  }
+
+  .ambient-shape--triangle {
+    animation: ambient-drift-two 42s ease-in-out infinite alternate;
+  }
+
+  .ambient-shape--ring {
+    animation: ambient-drift-three 38s ease-in-out infinite alternate;
+  }
+
+  .ambient-shape--diamond {
+    animation: ambient-drift-four 30s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes ambient-drift-one {
+  from {
+    opacity: 0.3;
+    transform: translate3d(-1rem, 0, 0) rotate(-8deg);
+  }
+
+  to {
+    opacity: 0.72;
+    transform: translate3d(2rem, 1.5rem, 0) rotate(18deg);
+  }
+}
+
+@keyframes ambient-drift-two {
+  from {
+    opacity: 0.24;
+    transform: translate3d(0, -0.5rem, 0) rotate(-10deg);
+  }
+
+  to {
+    opacity: 0.68;
+    transform: translate3d(-1.5rem, 2rem, 0) rotate(16deg);
+  }
+}
+
+@keyframes ambient-drift-three {
+  from {
+    opacity: 0.24;
+    transform: translate3d(1rem, 0, 0) rotate(12deg);
+  }
+
+  to {
+    opacity: 0.62;
+    transform: translate3d(-2rem, -1rem, 0) rotate(-14deg);
+  }
+}
+
+@keyframes ambient-drift-four {
+  from {
+    opacity: 0.3;
+    transform: translate3d(0, 0, 0) rotate(45deg);
+  }
+
+  to {
+    opacity: 0.82;
+    transform: translate3d(1.5rem, -1.2rem, 0) rotate(155deg);
+  }
 }
 
 ::selection {
@@ -125,31 +255,24 @@ textarea::placeholder {
   color: rgba(215, 197, 226, 0.58);
 }
 
-/* Temporary brand system used until the final SVG logo files land. */
-.brand-lockup {
+.brand-logo-link {
   display: inline-flex;
-  align-items: baseline;
-  gap: 0.65rem;
-  color: var(--foreground);
-  line-height: 0.82;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 3.45rem;
+  height: 3.45rem;
 }
 
-.brand-lockup-mark {
-  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
-  font-size: 1.95rem;
-  letter-spacing: -0.08em;
-  text-shadow: 3px 3px 0 var(--accent);
+.brand-logo-link:hover {
+  transform: translateY(-1px);
 }
 
-.brand-lockup-meta {
-  border-left: 1px solid var(--cyan);
-  color: var(--cyan);
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.17em;
-  line-height: 1.05;
-  padding-left: 0.7rem;
-  text-transform: uppercase;
+.brand-logo-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .nav-link {
@@ -189,6 +312,16 @@ textarea::placeholder {
   white-space: nowrap;
 }
 
+.mobile-menu-toggle {
+  display: inline-flex;
+}
+
+@media (min-width: 64rem) {
+  .mobile-menu-toggle {
+    display: none;
+  }
+}
+
 .nav-action-primary {
   background: var(--accent);
   color: var(--foreground);
@@ -222,9 +355,8 @@ textarea::placeholder {
 .display-heading {
   font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
   font-weight: 900;
-  letter-spacing: -0.045em;
-  line-height: 0.88;
-  text-shadow: 0.07em 0.07em 0 var(--accent);
+  letter-spacing: -0.025em;
+  line-height: 0.98;
   text-wrap: balance;
 }
 
@@ -265,6 +397,135 @@ textarea::placeholder {
 .site-button-secondary:hover {
   background: var(--cyan);
   color: var(--background);
+}
+
+.admin-page-shell {
+  position: relative;
+  z-index: 1;
+}
+
+.admin-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(135deg, rgba(255, 0, 83, 0.22), transparent 46%),
+    linear-gradient(315deg, rgba(210, 255, 0, 0.13), transparent 55%),
+    var(--surface);
+  box-shadow: 8px 8px 0 var(--accent);
+  padding: clamp(1.5rem, 5vw, 3.5rem);
+}
+
+.admin-hero::before,
+.admin-hero::after {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  content: "";
+}
+
+.admin-hero::before {
+  top: -7rem;
+  right: 13%;
+  width: 18rem;
+  aspect-ratio: 1;
+  border: 1px solid rgba(200, 250, 247, 0.3);
+  border-radius: 50%;
+}
+
+.admin-hero::after {
+  right: 5%;
+  bottom: -3rem;
+  width: 0;
+  height: 0;
+  border-right: 4rem solid transparent;
+  border-bottom: 7rem solid rgba(210, 255, 0, 0.14);
+  border-left: 4rem solid transparent;
+  transform: rotate(18deg);
+}
+
+.admin-hero-stamp {
+  position: absolute;
+  right: clamp(1rem, 5vw, 4rem);
+  bottom: clamp(1rem, 5vw, 3rem);
+  color: var(--lime);
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  font-size: clamp(3.5rem, 10vw, 7rem);
+  letter-spacing: -0.08em;
+  line-height: 0.75;
+  text-align: right;
+  text-shadow: 5px 5px 0 var(--accent);
+  transform: rotate(-7deg);
+}
+
+.admin-hero-stamp span {
+  display: block;
+  color: var(--cyan);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.22em;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  line-height: 1;
+}
+
+.admin-action-card {
+  display: block;
+  min-height: 12rem;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--foreground);
+  padding: 1.5rem;
+  box-shadow: 6px 6px 0 var(--surface-strong);
+}
+
+.admin-action-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0 var(--accent);
+}
+
+.admin-action-card p {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.admin-action-card--cyan {
+  border-color: var(--cyan);
+  background: var(--cyan);
+  color: var(--background);
+}
+
+.admin-action-card--cyan p,
+.admin-action-card--lime p {
+  color: rgba(23, 0, 32, 0.78);
+}
+
+.admin-action-card--cyan svg {
+  color: #176e73;
+}
+
+.admin-action-card--lime {
+  border-color: var(--lime);
+  background: var(--lime);
+  color: var(--background);
+}
+
+.admin-action-card--lime svg {
+  color: var(--accent);
+}
+
+.admin-action-card--magenta {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--foreground);
+}
+
+.admin-action-card--magenta p {
+  color: rgba(255, 250, 255, 0.86);
+}
+
+.admin-action-card--magenta svg {
+  color: var(--lime);
 }
 
 .hero-stage {
@@ -474,9 +735,16 @@ textarea::placeholder {
 }
 
 .feature-panel {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
   border: 1px solid var(--line);
   background: var(--surface);
-  padding: 1.5rem;
+  padding: clamp(1.5rem, 4vw, 2.25rem);
+}
+
+.feature-panel .display-heading {
+  overflow-wrap: anywhere;
 }
 
 .feature-panel--lime {
@@ -500,6 +768,15 @@ textarea::placeholder {
 /* Theme bridge for the existing workflow screens. */
 [class~="bg-white"] {
   background-color: var(--surface) !important;
+}
+
+/* Legacy cards follow the square-edged 2026 identity; controls and badges keep their own radii. */
+:where(article, section, form, aside)[class*="rounded-"] {
+  border-radius: 0 !important;
+}
+
+:where(div)[class*="rounded-"][class~="border"][class*="shadow-"] {
+  border-radius: 0 !important;
 }
 
 [class~="bg-[#fffaf0]"] {
@@ -645,6 +922,16 @@ textarea::placeholder {
 }
 
 @media (max-width: 767px) {
+  .admin-hero-stamp {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    width: fit-content;
+    margin: 2rem 0 0 auto;
+    font-size: 4rem;
+    opacity: 0.65;
+  }
+
   .hero-poster {
     box-shadow: 7px 7px 0 var(--accent);
     transform: rotate(1deg);

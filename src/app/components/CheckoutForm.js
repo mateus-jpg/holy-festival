@@ -118,7 +118,7 @@ export default function CheckoutForm({
             </div>
 
             {message && (
-                <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+                <div className="rounded-lg border border-red-500/30 bg-red-500/12 p-3 text-sm text-red-700">
                     {message}
                 </div>
             )}
@@ -129,7 +129,7 @@ export default function CheckoutForm({
                 className={`
           w-full py-3 px-4 rounded-lg font-medium transition-all duration-200
           ${isLoading || !stripe || !elements
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        ? 'bg-[#351249] text-[#d7c5e2] cursor-not-allowed'
                         : 'bg-[#c5471f] hover:bg-[#8f2f18] text-white shadow-sm hover:shadow-md'
                     }
         `}
@@ -144,7 +144,7 @@ export default function CheckoutForm({
                 )}
             </button>
 
-            <div className="text-xs text-gray-500 text-center">
+            <div className="text-center text-xs text-[#d7c5e2]">
                 Il pagamento è protetto da Stripe
             </div>
         </form>

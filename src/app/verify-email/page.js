@@ -55,8 +55,8 @@ export default function VerifyEmailPage() {
           Abbiamo inviato un link di verifica a <strong>{user.email}</strong>. Controlla la posta in arrivo e la cartella spam per continuare.
         </p>
 
-        {message && <p className="p-3 bg-green-100 text-green-700 rounded-md mb-4">{message}</p>}
-        {error && <p className="p-3 bg-red-100 text-red-700 rounded-md mb-4">{error}</p>}
+        {message && <p className="mb-4 rounded-md border border-green-500/30 bg-green-500/12 p-3 text-green-700">{message}</p>}
+        {error && <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/12 p-3 text-red-700">{error}</p>}
         
         <p className="text-sm text-[#012136]/55 mb-6">
           Questa pagina ti reindirizzerà automaticamente dopo la verifica.

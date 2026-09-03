@@ -66,6 +66,7 @@ function componentLabel(ticket) {
 export default function ManageTicketsPage() {
   const { user, loading: authLoading, getUserIdToken } = useAuth();
   const [tickets, setTickets] = useState([]);
+  const [bundleMode, setBundleMode] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState('');
   const [loading, setLoading] = useState(true);
@@ -88,6 +89,14 @@ export default function ManageTicketsPage() {
     () => singleTickets.filter((ticket) => form.componentProductIds.includes(ticket.id)),
     [form.componentProductIds, singleTickets]
   );
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('type') === 'bundle') {
+      setBundleMode(true);
+      setForm({ ...emptyForm, productType: 'bundle' });
+    }
+  }, []);
 
   const loadTickets = useCallback(async () => {
     if (authLoading) {
@@ -154,7 +163,7 @@ export default function ManageTicketsPage() {
 
   const resetForm = () => {
     setEditingId('');
-    setForm(emptyForm);
+    setForm(bundleMode ? { ...emptyForm, productType: 'bundle' } : emptyForm);
   };
 
   const editTicket = (ticket) => {
@@ -318,12 +327,14 @@ export default function ManageTicketsPage() {
           <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#c5471f]">Admin</p>
           <h1 className="text-4xl font-black text-[#012136]">Gestisci biglietti</h1>
         </div>
-        <Link
-          href="/admin/generate-tickets"
-          className="inline-flex items-center justify-center rounded-full border border-[#012136]/18 bg-white px-5 py-3 text-sm font-bold text-[#012136] shadow-sm"
-        >
-          Genera manuali
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link href="/admin/manage-tickets?type=bundle" className="site-button site-button-primary">
+            Crea abbonamento
+          </Link>
+          <Link href="/admin/generate-tickets" className="site-button site-button-secondary">
+            Genera manuali
+          </Link>
+        </div>
       </div>
 
       {message && (

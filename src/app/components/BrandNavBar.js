@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { ClipboardList, LogIn, LogOut, Menu, QrCode, ShoppingCart, Ticket, TicketPlus, User, X } from 'lucide-react';
@@ -26,13 +27,15 @@ const adminLinks = [
 
 function BrandLockup() {
   return (
-    <Link href="/" className="brand-lockup" aria-label="Vai alla homepage">
-      <span className="brand-lockup-mark">HOLY</span>
-      <span className="brand-lockup-meta">
-        Festival
-        <br />
-        Verona
-      </span>
+    <Link href="/" className="brand-logo-link" aria-label="Holy Festival — vai alla homepage">
+      <Image
+        src="/images/holy-logo-type-transparent.png"
+        alt="Holy Festival Verona"
+        width={592}
+        height={588}
+        className="brand-logo-image"
+        priority
+      />
     </Link>
   );
 }
@@ -108,7 +111,7 @@ export default function BrandNavBar() {
           <button
             onClick={() => setIsOpen((open) => !open)}
             type="button"
-            className="nav-action nav-action-secondary h-11 w-11 p-0 md:hidden"
+            className="nav-action nav-action-secondary mobile-menu-toggle h-11 w-11 p-0"
             aria-controls="mobile-menu"
             aria-expanded={isOpen}
           >
@@ -119,7 +122,7 @@ export default function BrandNavBar() {
       </div>
 
       {isOpen && (
-        <div className="border-t border-[rgba(200,250,247,0.24)] bg-[#21082f] md:hidden" id="mobile-menu">
+        <div className="mobile-menu-panel border-t border-[rgba(200,250,247,0.24)] bg-[#21082f]" id="mobile-menu">
           <div className="space-y-1 px-4 py-4">
             {publicLinks.map((link) => renderLink(link, true))}
             {user && memberLinks.map((link) => renderLink(link, true))}
