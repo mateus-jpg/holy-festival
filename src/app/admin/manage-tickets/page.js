@@ -497,8 +497,11 @@ export default function ManageTicketsPage() {
                 value={form.imgUrl}
                 onChange={(event) => updateField('imgUrl', event.target.value)}
                 className="w-full rounded-lg border border-[#012136]/20 bg-white px-4 py-3 text-[#012136]"
-                placeholder="https://..."
+                placeholder="/images/tickets/ven19.png"
               />
+              <span className="mt-2 block text-xs text-[#012136]/60">
+                Per un&apos;immagine nel repository usa il formato /images/tickets/nome-file.ext.
+              </span>
             </label>
 
             {form.productType === 'single' ? (

@@ -9,6 +9,10 @@ import ticketFlashSalesResized from '../../../public/tickets/flashSalesResized.j
 import ticketSaturday from '../../../public/tickets/sab20.png';
 import ticketFriday from '../../../public/tickets/ven19.png';
 
+function normalizeTicketImagePath(path) {
+  return path.replace(/^\/images\/tickets\//, '/tickets/');
+}
+
 const localImageMap = {
   '/images/obt-10-logo.webp': obt10Logo,
   '/images/obt-logo.webp': obtLogo,
@@ -45,5 +49,5 @@ function normalizeLocalImagePath(src) {
 
 export function resolveLocalImage(src) {
   const normalizedPath = normalizeLocalImagePath(src);
-  return localImageMap[normalizedPath] || src;
+  return localImageMap[normalizeTicketImagePath(normalizedPath)] || src;
 }
