@@ -19,5 +19,6 @@ export async function GET(request, { params }) {
     return new Response('Not found', { status: 404 });
   }
 
-  return NextResponse.redirect(new URL(asset.src, request.url));
+  const assetUrl = new URL(asset.src, 'http://localhost');
+  return NextResponse.redirect(new URL(`${assetUrl.pathname}${assetUrl.search}`, request.url));
 }
