@@ -70,8 +70,7 @@ export default function Home() {
               </div>
               <figcaption className="absolute inset-x-5 bottom-5 z-10 flex items-end justify-between gap-4 text-[#fffaff]">
                 <span className="font-mono text-[0.65rem] font-bold uppercase tracking-[0.18em] text-[#c8faf7]">
-                  One Bridge To-
-                  <br />
+                 -
                   presenta
                 </span>
                 <span className="display-heading text-right text-3xl text-[#ff0053] [text-shadow:2px_2px_0_#d2ff00]">
