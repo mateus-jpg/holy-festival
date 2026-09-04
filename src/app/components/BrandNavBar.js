@@ -17,7 +17,7 @@ const publicLinks = [
 const memberLinks = [
   { href: '/profile', label: 'Profilo', icon: User },
   { href: '/shop', label: 'Prenotazioni', icon: Ticket },
-  { href: '/tickets', label: 'I tuoi ticket', icon: Ticket },
+  { href: '/tickets', label: 'Le tue prenotazioni', icon: Ticket },
 ];
 
 const adminLinks = [
