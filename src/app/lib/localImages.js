@@ -8,6 +8,10 @@ import ticketFlashSales from '../../../public/tickets/flashSales.jpg';
 import ticketFlashSalesResized from '../../../public/tickets/flashSalesResized.jpg';
 import ticketSaturday from '../../../public/tickets/sab20.png';
 import ticketFriday from '../../../public/tickets/ven19.png';
+import holySeptember11 from '../../../public/holy-2026/11-sep.jpeg';
+import holySeptember12 from '../../../public/holy-2026/12-sep.jpeg';
+import holySeptember13 from '../../../public/holy-2026/13-sep.jpeg';
+import holySeptemberSubscription from '../../../public/holy-2026/abb-sep.jpeg';
 
 function normalizeTicketImagePath(path) {
   return path.replace(/^\/images\/tickets\//, '/tickets/');
@@ -24,6 +28,10 @@ const localImageMap = {
   '/tickets/flashSalesResized.jpg': ticketFlashSalesResized,
   '/tickets/sab20.png': ticketSaturday,
   '/tickets/ven19.png': ticketFriday,
+  '/holy-2026/11-sep.jpeg': holySeptember11,
+  '/holy-2026/12-sep.jpeg': holySeptember12,
+  '/holy-2026/13-sep.jpeg': holySeptember13,
+  '/holy-2026/abb-sep.jpeg': holySeptemberSubscription,
 };
 
 function normalizeLocalImagePath(src) {
