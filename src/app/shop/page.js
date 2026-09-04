@@ -165,7 +165,7 @@ export default function Products() {
 
         <div className="mb-8 flex flex-col gap-2">
           <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#c5471f]">{eventContent.shortName}</p>
-          <h1 className="display-heading text-5xl text-[#fffaff]">Biglietti</h1>
+          <h1 className="display-heading text-5xl text-[#fffaff]">Prenotazioni</h1>
           <p className="max-w-2xl text-[#012136]/70">
             Seleziona gli ingressi disponibili e completa la tua donazione in sicurezza.
           </p>
