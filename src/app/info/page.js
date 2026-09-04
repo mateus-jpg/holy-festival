@@ -131,7 +131,7 @@ export default function InfoPage() {
             href="/shop"
             className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#c5471f] px-5 py-3 font-bold text-white transition-colors hover:bg-[#8f2f18]"
           >
-            Vai ai biglietti
+            Prenota il tuo posto
             <Ticket className="h-4 w-4" />
           </Link>
         </div>
