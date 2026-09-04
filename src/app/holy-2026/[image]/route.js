@@ -1,4 +1,3 @@
-import { NextResponse } from 'next/server';
 import holySeptember11 from '../../../../public/holy-2026/11-sep.jpeg';
 import holySeptember12 from '../../../../public/holy-2026/12-sep.jpeg';
 import holySeptember13 from '../../../../public/holy-2026/13-sep.jpeg';
@@ -20,5 +19,10 @@ export async function GET(request, { params }) {
   }
 
   const assetUrl = new URL(asset.src, 'http://localhost');
-  return NextResponse.redirect(new URL(`${assetUrl.pathname}${assetUrl.search}`, request.url));
+  return new Response(null, {
+    status: 307,
+    headers: {
+      Location: `${assetUrl.pathname}${assetUrl.search}`,
+    },
+  });
 }
