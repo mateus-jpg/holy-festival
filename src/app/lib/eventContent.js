@@ -48,6 +48,10 @@ export const eventContent = {
       title: 'Biglietti',
       text: 'Venerdì €10 · sabato €10 · domenica €5 · abbonamento tre giorni €20.',
     },
+    {
+      title: 'Accesso',
+      text: 'Il biglietto garantisce l’accesso. Domenica il biglietto è sempre richiesto.',
+    },
   ],
   program: [
     {
